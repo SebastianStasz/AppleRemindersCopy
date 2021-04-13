@@ -9,12 +9,28 @@ import SwiftUI
 
 @main
 struct AppleRemindersCopyApp: App {
-    let persistenceController = PersistenceController.shared
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-        }
-    }
+   @Environment(\.scenePhase) private var scenePhase
+   @StateObject private var sheetController = SheetController()
+   @StateObject private var navigationController = NavigationController()
+   private let context = PersistenceController.context
+   
+   var body: some Scene {
+      WindowGroup {
+         HomeView()
+            .environment(\.managedObjectContext, context)
+            .environmentObject(navigationController)
+            .environmentObject(sheetController)
+      }
+      .onChange(of: scenePhase) { phase in
+          if phase == .background {
+            try! context.save()
+          }
+      }
+   }
 }
+
+//private func setupNavigationBar() {
+//   UINavigationBar.appearance().barTintColor = UIColor(backgroundColor)
+//   UINavigationBar.appearance().shadowImage = UIImage()
+//   UINavigationBar.appearance().isTranslucent = false
+//}

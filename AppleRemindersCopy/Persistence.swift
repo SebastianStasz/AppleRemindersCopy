@@ -8,48 +8,173 @@
 import CoreData
 
 struct PersistenceController {
-    static let shared = PersistenceController()
+   static let shared = PersistenceController()
+   
+   static let context = PersistenceController.shared.container.viewContext
+   
+   let container: NSPersistentContainer
+   
+   static var preview: PersistenceController = {
+      let result = PersistenceController(inMemory: true)
+      let viewContext = result.container.viewContext
+      
+      let listNames = ["Work", "Studies", "Personal", "This Week", "Private"]
+      var reminderLists: [ReminderList] = []
+      
+      for index in listNames.indices {
+         let list = ReminderList(context: viewContext)
+         list.id = UUID()
+         list.name_ = listNames[index]
+         list.icon = ReminderIcon.allCases.randomElement()!
+         list.color = ReminderColor.allCases.randomElement()!
+         list.reminders_ = []
+         list.group = nil
 
-    static var preview: PersistenceController = {
-        let result = PersistenceController(inMemory: true)
-        let viewContext = result.container.viewContext
-        for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-        }
-        do {
-            try viewContext.save()
-        } catch {
-            // Replace this implementation with code to handle the error appropriately.
-            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-        return result
-    }()
+         reminderLists.append(list)
+      }
 
-    let container: NSPersistentContainer
+      let groupNames = ["Main", "Important"]
+      var groupLists: [ReminderGroup] = []
 
-    init(inMemory: Bool = false) {
-        container = NSPersistentContainer(name: "AppleRemindersCopy")
-        if inMemory {
-            container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
-        }
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+      for name in groupNames {
+         let group = ReminderGroup(context: viewContext)
+         group.id = UUID()
+         group.name_ = name
+         group.list_ = []
+         groupLists.append(group)
+      }
 
-                /*
-                Typical reasons for an error here include:
-                * The parent directory does not exist, cannot be created, or disallows writing.
-                * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                * The device is out of space.
-                * The store could not be migrated to the current model version.
-                Check the error message to determine what the actual problem was.
-                */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
-    }
+      groupLists[0].list_ = [reminderLists[0]]
+      groupLists[1].list_ = [reminderLists[1], reminderLists[2]]
+
+      let reminderNames = ["Delectus aut autem", "Quis ut nam facilis et officia qui", "Fugiat veniam minus", "Et porro tempora", "Laboriosam mollitia", "Qui ullam ratione", "Illo expedita", "Quo adipisci enim", "Repellendus sunt", "Illo porro", "Tempora mollitia", "Qui aut autem", "Illo delectus aut", "Er tempora fugiat", "Delectus aut autem", "Quis ut nam facilis et officia qui", "Fugiat veniam minus", "Et porro tempora", "Quo adipisci enim", "Repellendus sunt", "Illo porro", "Delectus aut autem", "Quis ut nam facilis et officia qui", "Fugiat veniam minus", "Et porro tempora", "Laboriosam mollitia", "Qui ullam ratione", "Illo expedita", "Quo adipisci enim", "Repellendus sunt", "Illo porro", "Tempora mollitia", "Qui aut autem", "Illo delectus aut", "Er tempora fugiat"]
+      let notes = ["repellendus sunt dolores architecto voluptatum", nil]
+
+      var reminders: [Reminder] = []
+
+      for name in reminderNames {
+         let reminder = Reminder(context: viewContext)
+         reminder.id = UUID()
+         reminder.name = name
+         reminder.date = [CoreDataSample.randomDate(), Date()].randomElement()!
+         reminder.notes = notes.randomElement()!
+         reminder.isFlagged = [true, false].randomElement()!
+         reminder.priority = Priority.allCases.randomElement()!
+         reminder.repetition = Repetition.allCases.randomElement()!
+         reminder.url = ["sampleurl.com", nil].randomElement()!
+         reminder.list = reminderLists.randomElement()!
+         reminders.append(reminder)
+      }
+
+      do {
+         try viewContext.save()
+      } catch {
+         let nsError = error as NSError
+         fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+      }
+      return result
+   }()
+   
+   init(inMemory: Bool = false) {
+      container = NSPersistentContainer(name: "AppleRemindersCopy")
+      if inMemory {
+         container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+      }
+      container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+         if let error = error as NSError? {
+            fatalError("Unresolved error \(error), \(error.userInfo)")
+         }
+      })
+   }
+   
+   func save() {
+      guard PersistenceController.context.hasChanges else { return }
+      do {
+         try PersistenceController.context.save()
+         print("Context saved successfuly!")
+      } catch {
+         print("Error when saving context: \(error)")
+      }
+   }
+}
+
+// MARK: -- Sample Data
+
+extension PersistenceController {
+   
+}
+
+struct CoreDataSample {
+
+   static func createSampleGroupLists() -> [ReminderGroup] {
+      let groupNames = ["Main", "Important"]
+      var groupList: [ReminderGroup] = []
+      
+      for name in groupNames {
+         let group = ReminderGroup(context: PersistenceController.preview.container.viewContext)
+         group.id = UUID()
+         group.name_ = name
+         group.list_ = []
+         groupList.append(group)
+      }
+      
+      return groupList
+   }
+   
+   static func createSampleReminderLists() -> [ReminderList] {
+      let listNames = ["Work", "Studies", "Personal", "This Week", "Private"]
+      var reminderLists: [ReminderList] = []
+      var reminderGroups: [ReminderGroup?] = Self.createSampleGroupLists()
+      reminderGroups.append(nil)
+      
+      for index in listNames.indices {
+         let list = ReminderList(context: PersistenceController.preview.container.viewContext)
+         list.id = UUID()
+         list.name_ = listNames[index]
+         list.icon = ReminderIcon.allCases.randomElement()!
+         list.color = ReminderColor.allCases.randomElement()!
+         list.reminders_ = []
+         list.group = reminderGroups.randomElement()!
+         
+         reminderLists.append(list)
+      }
+      
+      return reminderLists
+   }
+   
+   static func createReminders() -> [Reminder] {
+      let reminderNames = ["delectus aut autem", "quis ut nam facilis et officia qui", "fugiat veniam minus", "et porro tempora", "laboriosam mollitia", "qui ullam ratione", "illo expedita", "quo adipisci enim", "repellendus sunt"]
+      let notes = ["repellendus sunt dolores architecto voluptatum", nil]
+      
+      let reminerLists = Self.createSampleReminderLists()
+      var reminders: [Reminder] = []
+      
+      for name in reminderNames {
+         let reminder = Reminder(context: PersistenceController.preview.container.viewContext)
+         reminder.id = UUID()
+         reminder.name = name
+         reminder.date = Date()
+         reminder.notes = notes.randomElement()!
+         reminder.isFlagged = [true, false].randomElement()!
+         reminder.priority = Priority.allCases.randomElement()!
+         reminder.repetition = Repetition.allCases.randomElement()!
+         reminder.url = ["sampleurl.com", nil].randomElement()!
+         reminder.list = reminerLists[4]
+         reminders.append(reminder)
+      }
+      
+      return reminders
+   }
+   
+   static func randomDate() -> Date {
+       let months = [2, 3]
+       let days = Array(1...3)
+       
+       var components = DateComponents()
+       components.day = days.randomElement()
+       components.month = months.randomElement()
+       components.year = 2021
+       let date = Calendar.current.date(from: components)
+       return date ?? Date()
+   }
 }
