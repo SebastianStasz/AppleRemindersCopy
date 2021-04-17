@@ -9,24 +9,22 @@ import SwiftUI
 
 struct ReminderListList: View {
    @Environment(\.editMode) private var editMode
-   @EnvironmentObject private var listVM: ReminderListVM
-   @FetchRequest private var reminderLists: FetchedResults<ReminderList>
-   
-   init(predicate: NSPredicate) {
-      _reminderLists = FetchRequest(entity: ReminderList.entity(),
-                                    sortDescriptors: [NSSortDescriptor(key: "name_", ascending: true)], predicate: predicate)
-   }
+   let reminderLists: [ReminderListEntity]
    
    var body: some View {
       ForEach(reminderLists) { list in
-         NavigationLink(destination: ReminderListView(list: list)) {
-            ReminderListRow(list: list)
-               .environment(\.editMode, editMode)
-               .padding(.vertical, 3)
-         }
+         ReminderListRowLink(config: .byList(list), list: list)
+            .environment(\.editMode, editMode)
+            .padding(.vertical, 3)
       }
-      .onDelete{ listVM.deleteList(from: reminderLists.map{ $0 }, at: $0) }
+      .onDelete(perform: delete)
       .onMove { indexSet, index in } // TODO: Reordering
+   }
+   
+   private func delete(at indexSet: IndexSet) {
+      let index = indexSet.map{ $0 }.first!
+      let list = reminderLists[index]
+      CoreDataManager.shared.delete(list)
    }
 }
 

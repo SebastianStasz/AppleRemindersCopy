@@ -1,5 +1,5 @@
 //
-//  ReminderCardModel.swift
+//  ReminderCard.swift
 //  AppleRemindersCopy
 //
 //  Created by Sebastian Staszczyk on 02/04/2021.
@@ -10,10 +10,10 @@ import SwiftUI
 
 class ReminderCard {
    private let key = UserDefaults.Keys.reminderCards.rawValue
-   private(set) var all: [Model] = [] { didSet { save() } }
+   private(set) var all: [CardData] = [] { didSet { save() } }
    
    init() {
-      UserDefaults.standard.reset()
+//      UserDefaults.standard.hardReset()
       loadReminderCards()
    }
    
@@ -25,7 +25,7 @@ class ReminderCard {
    
    func toggle(cards: Set<String>) {
       _ = all.indices.map {
-         let shoulbBeEnabled = cards.contains(all[$0].title)
+         let shoulbBeEnabled = cards.contains(all[$0].model.title)
          all[$0].isEnabled = shoulbBeEnabled ? true : false
       }
    }
@@ -38,14 +38,14 @@ class ReminderCard {
    }
    
    private func decodeReminderCards(from data: Data) {
-      print("Reminder Cards in memory")
-      let reminderCards = try! PropertyListDecoder().decode([ReminderCard.Model].self, from: data)
+      print("Loading Reminder Cards")
+      let reminderCards = try! PropertyListDecoder().decode([ReminderCard.CardData].self, from: data)
       all = reminderCards
    }
    
    private func createReminderCards() {
       print("Creating Reminder Cards")
-      all = ReminderCard.Default.allCases.map { $0.cardModel }
+      all = ReminderCardModel.allCases.map { ReminderCard.CardData(model: $0) }
    }
    
    private func save() {
@@ -54,44 +54,20 @@ class ReminderCard {
    }
 }
 
-// MARK: -- Reminder Card Model
+// MARK: -- Card Data
 
 extension ReminderCard {
-   struct Model: Hashable, Codable {
-      let list: ReminderCardList
-      let title: String
-      let image: String
-      let color: ReminderColor
+   
+   struct CardData: Codable, Identifiable {
+      let model: ReminderCardModel
       var isEnabled: Bool
-      var count = 20
-   }
-}
-
-// MARK: -- Reminder Card Default
-
-extension ReminderCard {
-   enum Default: String, Identifiable, CaseIterable {
-      case today
-      case scheduled
-      case all
-      case flagged
-      case assignedToMe
       
-      var cardModel: ReminderCard.Model {
-         switch self {
-         case .today:
-            return ReminderCard.Model(list: .today, title: "Today", image: "bookmark.fill", color: .blue, isEnabled: true)
-         case .scheduled:
-            return ReminderCard.Model(list: .scheduled, title: "Scheduled", image: "calendar", color: .red, isEnabled: true)
-         case .all:
-            return ReminderCard.Model(list: .all, title: "All", image: "tray.fill", color: .gray, isEnabled: true)
-         case .flagged:
-            return ReminderCard.Model(list: .flagged, title: "Flagged", image: "flag.fill", color: .orange, isEnabled: true)
-         case .assignedToMe:
-            return ReminderCard.Model(list: .all, title: "Assigned to Me", image: "person.fill", color: .green, isEnabled: false)
-         }
+      var id: Int { model.id }
+      
+      init(model: ReminderCardModel, isEnabled: Bool = true) {
+         self.model = model
+         self.isEnabled = isEnabled
       }
-      
-      var id: String { rawValue }
    }
 }
+

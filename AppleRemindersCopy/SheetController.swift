@@ -10,13 +10,13 @@ import SwiftUI
 
 class SheetController: ObservableObject {
    @Published var activeSheet: ActiveSheet? = nil
-   var reminderList: ReminderList?
+   var reminderList: ReminderListEntity?
 }
 
 enum ActiveSheet: Identifiable {
-   case addReminder(Reminder?, ReminderList?)
-   case addList(ReminderList?)
-   case addGroup(ReminderGroup?)
+   case addReminder(ReminderEntity?, ReminderListEntity?)
+   case addList(ReminderListEntity?)
+   case addGroup(ReminderGroupEntity?)
    
    var sheetView: some View {
       Group {

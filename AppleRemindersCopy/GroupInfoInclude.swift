@@ -30,7 +30,7 @@ struct GroupInfoInclude: View {
       .onAppear { editMode?.wrappedValue = .active }
    }
    
-   private func moreListRow(list: ReminderList) -> some View {
+   private func moreListRow(list: ReminderListEntity) -> some View {
       HStack {
          Image(systemName: "plus.circle.fill")
             .foregroundColor(.systemGreen)

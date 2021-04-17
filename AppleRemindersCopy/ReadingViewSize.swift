@@ -12,7 +12,9 @@ import SwiftUI
 extension View {
     func readSize(onChange: @escaping (CGSize) -> Void) -> some View {
         background(geometryReader)
-            .onPreferenceChange(SizePreferenceKey.self, perform: onChange)
+         .onPreferenceChange(SizePreferenceKey.self) { newValue in
+            DispatchQueue.main.async { onChange(newValue) }
+         }
     }
     
     private var geometryReader: some View {

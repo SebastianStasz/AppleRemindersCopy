@@ -11,12 +11,11 @@ struct ReminderFormView: View {
    @Environment(\.presentationMode) private var presentation
    @Environment(\.managedObjectContext) private var context
    @StateObject private var form = ReminderFormVM()
-   let reminderList: ReminderList?
-   let reminderToEdit: Reminder?
+   let reminderList: ReminderListEntity?
+   let reminderToEdit: ReminderEntity?
    
-   @FetchRequest(entity: ReminderList.entity(),
-                 sortDescriptors: [NSSortDescriptor(key: "name_", ascending: true)]
-   ) private var reminderLists: FetchedResults<ReminderList>
+   @FetchRequest(entity: ReminderListEntity.entity(), sortDescriptors: [ReminderListEntity.sortByName]
+   ) private var reminderLists: FetchedResults<ReminderListEntity>
    
    var body: some View {
       Form {
@@ -42,7 +41,7 @@ struct ReminderFormView: View {
          
          Picker("List", selection: $form.reminderModel.list) {
             ForEach(reminderLists) {
-               ReminderListRow(list: $0, showRemindersCount: false)
+               ReminderListRow(list: $0)
                   .tag(Optional($0))
             }
          }
@@ -107,7 +106,7 @@ struct ReminderFormView: View {
    
    // MARK: -- Initializer
    
-   init(reminderToEdit: Reminder? = nil, reminderList: ReminderList? = nil) {
+   init(reminderToEdit: ReminderEntity? = nil, reminderList: ReminderListEntity? = nil) {
       self.reminderToEdit = reminderToEdit
       self.reminderList = reminderList
    }

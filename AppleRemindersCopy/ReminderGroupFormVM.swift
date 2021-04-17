@@ -9,18 +9,14 @@ import CoreData
 import Foundation
 
 class ReminderGroupFormVM: ObservableObject {
-   private let persistence = PersistenceController.preview
-   
-   private var context: NSManagedObjectContext {
-      persistence.container.viewContext
-   }
-   
-   var group: ReminderGroup? { didSet { updateGroupInfo() } }
+   private let coreDataManager = CoreDataManager.shared
+
+   var group: ReminderGroupEntity? { didSet { updateGroupInfo() } }
    var isValid: Bool { !name.isEmpty }
    
    @Published var name = ""
-   @Published var otherListsPlaceholder: [ReminderList] = []
-   @Published private(set) var includedListsPlaceholder: [ReminderList] = []
+   @Published var otherListsPlaceholder: [ReminderListEntity] = []
+   @Published private(set) var includedListsPlaceholder: [ReminderListEntity] = []
    
    // MARK: -- Intents
    
@@ -30,7 +26,7 @@ class ReminderGroupFormVM: ObservableObject {
       otherListsPlaceholder.append(list)
    }
    
-   func addToGroup(list: ReminderList) {
+   func addToGroup(list: ReminderListEntity) {
       let index = otherListsPlaceholder.firstIndex(of: list)
       includedListsPlaceholder.append(list)
       otherListsPlaceholder.remove(at: index!)
@@ -38,19 +34,19 @@ class ReminderGroupFormVM: ObservableObject {
    
    func saveChanges() {
       group == nil ? createGroup() : updateGroup(group!)
-      persistence.save()
+      coreDataManager.save()
    }
    
    // MARK: -- Core Data
    
-   private func updateGroup(_ group: ReminderGroup) {
+   private func updateGroup(_ group: ReminderGroupEntity) {
       group.name = name
       _ = includedListsPlaceholder.map{ group.addToList_($0) }
       _ = otherListsPlaceholder.map{ group.removeFromList_($0) }
    }
    
    private func createGroup() {
-      let newGroup = ReminderGroup(context: context)
+      let newGroup = ReminderGroupEntity(context: coreDataManager.context)
       newGroup.id = UUID()
       newGroup.name = name
       _ = includedListsPlaceholder.map{ newGroup.addToList_($0) }

@@ -10,7 +10,7 @@ import CoreData
 struct PersistenceController {
    static let shared = PersistenceController()
    
-   static let context = PersistenceController.shared.container.viewContext
+   static let context = PersistenceController.preview.container.viewContext
    
    let container: NSPersistentContainer
    
@@ -19,14 +19,14 @@ struct PersistenceController {
       let viewContext = result.container.viewContext
       
       let listNames = ["Work", "Studies", "Personal", "This Week", "Private"]
-      var reminderLists: [ReminderList] = []
+      var reminderLists: [ReminderListEntity] = []
       
       for index in listNames.indices {
-         let list = ReminderList(context: viewContext)
+         let list = ReminderListEntity(context: viewContext)
          list.id = UUID()
-         list.name_ = listNames[index]
+         list.name = listNames[index]
          list.icon = ReminderIcon.allCases.randomElement()!
-         list.color = ReminderColor.allCases.randomElement()!
+         list.color_ = ReminderColor.allCases.randomElement()!
          list.reminders_ = []
          list.group = nil
 
@@ -34,10 +34,10 @@ struct PersistenceController {
       }
 
       let groupNames = ["Main", "Important"]
-      var groupLists: [ReminderGroup] = []
+      var groupLists: [ReminderGroupEntity] = []
 
       for name in groupNames {
-         let group = ReminderGroup(context: viewContext)
+         let group = ReminderGroupEntity(context: viewContext)
          group.id = UUID()
          group.name_ = name
          group.list_ = []
@@ -50,13 +50,13 @@ struct PersistenceController {
       let reminderNames = ["Delectus aut autem", "Quis ut nam facilis et officia qui", "Fugiat veniam minus", "Et porro tempora", "Laboriosam mollitia", "Qui ullam ratione", "Illo expedita", "Quo adipisci enim", "Repellendus sunt", "Illo porro", "Tempora mollitia", "Qui aut autem", "Illo delectus aut", "Er tempora fugiat", "Delectus aut autem", "Quis ut nam facilis et officia qui", "Fugiat veniam minus", "Et porro tempora", "Quo adipisci enim", "Repellendus sunt", "Illo porro", "Delectus aut autem", "Quis ut nam facilis et officia qui", "Fugiat veniam minus", "Et porro tempora", "Laboriosam mollitia", "Qui ullam ratione", "Illo expedita", "Quo adipisci enim", "Repellendus sunt", "Illo porro", "Tempora mollitia", "Qui aut autem", "Illo delectus aut", "Er tempora fugiat"]
       let notes = ["repellendus sunt dolores architecto voluptatum", nil]
 
-      var reminders: [Reminder] = []
+      var reminders: [ReminderEntity] = []
 
       for name in reminderNames {
-         let reminder = Reminder(context: viewContext)
+         let reminder = ReminderEntity(context: viewContext)
          reminder.id = UUID()
          reminder.name = name
-         reminder.date = [CoreDataSample.randomDate(), Date()].randomElement()!
+         reminder.date = [CoreDataSample.randomDate(), Date(), nil].randomElement()!
          reminder.notes = notes.randomElement()!
          reminder.isFlagged = [true, false].randomElement()!
          reminder.priority = Priority.allCases.randomElement()!
@@ -86,32 +86,18 @@ struct PersistenceController {
          }
       })
    }
-   
-   func save() {
-      guard PersistenceController.context.hasChanges else { return }
-      do {
-         try PersistenceController.context.save()
-         print("Context saved successfuly!")
-      } catch {
-         print("Error when saving context: \(error)")
-      }
-   }
 }
 
 // MARK: -- Sample Data
 
-extension PersistenceController {
-   
-}
-
 struct CoreDataSample {
 
-   static func createSampleGroupLists() -> [ReminderGroup] {
+   static func createSampleGroupLists() -> [ReminderGroupEntity] {
       let groupNames = ["Main", "Important"]
-      var groupList: [ReminderGroup] = []
+      var groupList: [ReminderGroupEntity] = []
       
       for name in groupNames {
-         let group = ReminderGroup(context: PersistenceController.preview.container.viewContext)
+         let group = ReminderGroupEntity(context: PersistenceController.preview.container.viewContext)
          group.id = UUID()
          group.name_ = name
          group.list_ = []
@@ -121,18 +107,18 @@ struct CoreDataSample {
       return groupList
    }
    
-   static func createSampleReminderLists() -> [ReminderList] {
+   static func createSampleReminderLists() -> [ReminderListEntity] {
       let listNames = ["Work", "Studies", "Personal", "This Week", "Private"]
-      var reminderLists: [ReminderList] = []
-      var reminderGroups: [ReminderGroup?] = Self.createSampleGroupLists()
+      var reminderLists: [ReminderListEntity] = []
+      var reminderGroups: [ReminderGroupEntity?] = Self.createSampleGroupLists()
       reminderGroups.append(nil)
       
       for index in listNames.indices {
-         let list = ReminderList(context: PersistenceController.preview.container.viewContext)
+         let list = ReminderListEntity(context: PersistenceController.preview.container.viewContext)
          list.id = UUID()
-         list.name_ = listNames[index]
+         list.name = listNames[index]
          list.icon = ReminderIcon.allCases.randomElement()!
-         list.color = ReminderColor.allCases.randomElement()!
+         list.color_ = ReminderColor.allCases.randomElement()!
          list.reminders_ = []
          list.group = reminderGroups.randomElement()!
          
@@ -142,15 +128,15 @@ struct CoreDataSample {
       return reminderLists
    }
    
-   static func createReminders() -> [Reminder] {
+   static func createReminders() -> [ReminderEntity] {
       let reminderNames = ["delectus aut autem", "quis ut nam facilis et officia qui", "fugiat veniam minus", "et porro tempora", "laboriosam mollitia", "qui ullam ratione", "illo expedita", "quo adipisci enim", "repellendus sunt"]
       let notes = ["repellendus sunt dolores architecto voluptatum", nil]
       
       let reminerLists = Self.createSampleReminderLists()
-      var reminders: [Reminder] = []
+      var reminders: [ReminderEntity] = []
       
       for name in reminderNames {
-         let reminder = Reminder(context: PersistenceController.preview.container.viewContext)
+         let reminder = ReminderEntity(context: PersistenceController.preview.container.viewContext)
          reminder.id = UUID()
          reminder.name = name
          reminder.date = Date()

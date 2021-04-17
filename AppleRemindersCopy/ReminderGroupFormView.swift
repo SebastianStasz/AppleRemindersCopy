@@ -10,15 +10,15 @@ import SwiftUI
 
 struct ReminderGroupFormView: View {
    @Environment(\.presentationMode) private var presentation
-   @FetchRequest private var fetchedLists: FetchedResults<ReminderList>
+   @FetchRequest private var fetchedLists: FetchedResults<ReminderListEntity>
    @StateObject private var groupVM = ReminderGroupFormVM()
-   let group: ReminderGroup?
+   let group: ReminderGroupEntity?
    
-   private var otherLists: [ReminderList] {
+   private var otherLists: [ReminderListEntity] {
       fetchedLists.map{$0}
    }
    
-   init(group: ReminderGroup? = nil) {
+   init(group: ReminderGroupEntity? = nil) {
       self.group = group
       var predicate: NSPredicate
       if let group = group {
@@ -26,7 +26,7 @@ struct ReminderGroupFormView: View {
       } else {
          predicate = NSPredicate(format: "group == nil")
       }
-      _fetchedLists = FetchRequest(entity: ReminderList.entity(), sortDescriptors: [], predicate: predicate)
+      _fetchedLists = FetchRequest(entity: ReminderListEntity.entity(), sortDescriptors: [], predicate: predicate)
    }
    
    var body: some View {

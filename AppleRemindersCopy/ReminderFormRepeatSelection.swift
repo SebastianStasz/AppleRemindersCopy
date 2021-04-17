@@ -12,7 +12,7 @@ struct ReminderFormRepeatSelection: View {
    
    private var endRepetitionSelection: String {
       form.reminderModel.endRepetition == .date
-         ? DateHelper.date.string(from: form.reminderModel.endRepetitionDate)
+         ? DateManager.date.string(from: form.reminderModel.endRepetitionDate)
          : "Never"
    }
    

@@ -9,10 +9,11 @@ import SwiftUI
 
 @main
 struct AppleRemindersCopyApp: App {
+   private let context = PersistenceController.preview.container.viewContext
    @Environment(\.scenePhase) private var scenePhase
+   
    @StateObject private var sheetController = SheetController()
    @StateObject private var navigationController = NavigationController()
-   private let context = PersistenceController.context
    
    var body: some Scene {
       WindowGroup {
@@ -28,9 +29,3 @@ struct AppleRemindersCopyApp: App {
       }
    }
 }
-
-//private func setupNavigationBar() {
-//   UINavigationBar.appearance().barTintColor = UIColor(backgroundColor)
-//   UINavigationBar.appearance().shadowImage = UIImage()
-//   UINavigationBar.appearance().isTranslucent = false
-//}

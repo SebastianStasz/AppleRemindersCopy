@@ -8,33 +8,70 @@
 import Combine
 import SwiftUI
 
-struct ReminderRow: View {
-   @Environment(\.managedObjectContext) private var context
-   @EnvironmentObject private var sheet: SheetController
-   @EnvironmentObject private var listVM: RemindersVM
+class ReminderRowVM: ObservableObject {
+   private let coreDataManager = CoreDataManager.shared
+   private var cancellable: Set<AnyCancellable> = []
    
-   let reminder: Reminder
-   @State var name = "" {
-      didSet { reminder.name = name }
+   var listVM: RemindersVM? = nil
+   var reminder: ReminderEntity? = nil { didSet { setReminderInfo() } }
+   
+   @Published var name = ""
+   @Published var isCompleted = false
+   
+   init() {
+      $isCompleted
+         .dropFirst()
+         .debounce(for: .seconds(3), scheduler: DispatchQueue.main)
+         .filter { $0 }
+         .sink { [weak self] _ in
+               self?.deleteReminder()
+         }
+         .store(in: &cancellable)
    }
-   @State var isCompleted = false {
-      didSet {
-         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { setCompletion() }
+   
+   func selectionStarted() {
+      listVM!.selectedReminder = reminder
+   }
+   
+   func selectionEnded() {
+      listVM!.selectedReminder = nil
+      if name.isEmpty { deleteReminder() }
+      else if name != reminder?.name {
+         reminder?.name = name
+         coreDataManager.save()
       }
    }
    
+   private func deleteReminder() {
+      let index = (listVM?.reminders.firstIndex(of: reminder!)!)!
+      listVM?.removeFromList(at: index)
+      coreDataManager.delete(reminder!)
+   }
+   
+   private func setReminderInfo() {
+      name = reminder!.name
+      isCompleted = reminder!.isCompleted
+   }
+}
+
+struct ReminderRow: View {
+   @EnvironmentObject private var sheet: SheetController
+   @EnvironmentObject private var listVM: RemindersVM
+   @StateObject private var reminderVM = ReminderRowVM()
+   let reminder: ReminderEntity
+
    var body: some View {
       HStack {
          HStack(spacing: 15) {
-            Button { isCompleted.toggle() } label: {}
-               .buttonStyle(CheckMarkButtonStyle(isCompleted: isCompleted, color: reminder.list.color.color))
+            Button { reminderVM.isCompleted.toggle() } label: {}
+               .buttonStyle(CheckMarkButtonStyle(isCompleted: reminderVM.isCompleted, color: reminder.listColor))
             
             VStack(alignment: .leading, spacing: 6) {
-               TextField("", text: $name) { isFocused in
-                  isFocused ? selectionStarted() : selectionEnded()
+               TextField("", text: $reminderVM.name) { isFocused in
+                  isFocused ? reminderVM.selectionStarted() : reminderVM.selectionEnded()
                }
                
-               if listVM.showListName {
+               if listVM.config?.showListName ?? false {
                   Text(reminder.list.name).foregroundColor(.gray)
                }
             }
@@ -46,9 +83,8 @@ struct ReminderRow: View {
       }
       .padding(.top, 5)
       .onAppear(perform: viewDidAppear)
-      .onDisappear(perform: viewDidDisappear)
    }
-   
+
    private var detailsButton: some View {
       Label("Show details", systemImage: "info.circle")
          .labelStyle(IconOnlyLabelStyle())
@@ -56,54 +92,30 @@ struct ReminderRow: View {
          .foregroundColor(.systemBlue)
          .onTapGesture { showReminderForm() }
    }
+   
+   // MARK: -- Functions
 
    private func viewDidAppear() {
-      name = reminder.name
-      isCompleted = reminder.isCompleted
-   }
-   
-   private func viewDidDisappear() {
-
-   }
-   
-   private func selectionStarted() {
-      listVM.selectedReminder = reminder
-   }
-   
-   private func selectionEnded() {
-      deleteReminder()
-      listVM.selectedReminder = nil
-   }
-   
-   private func setCompletion() {
-      guard isCompleted else { return }
-      reminder.isCompleted = true
-      deleteReminder()
-   }
-   
-   private func deleteReminder() {
-      guard name.isEmpty else { return }
-      context.delete(reminder)
+      reminderVM.listVM = listVM
+      reminderVM.reminder = reminder
    }
    
    private func showReminderForm() {
       hideKeyboard()
-      selectionEnded()
+      reminderVM.selectionEnded()
       sheet.activeSheet = .addReminder(reminder, nil)
    }
 }
 
 
 // MARK: -- Preview
-//
-//struct ReminderRow_Previews: PreviewProvider {
-//   static var previews: some View {
-//      let reminder = CoreDataSample.createReminders().first!
-//      ReminderRow(reminder: ReminderVM(reminder: reminder),
-//                  showListName: true,
-//                  selectedReminder: .constant(reminder))
-//         .previewLayout(.sizeThatFits)
-//         .frame(width: 300, alignment: .leading)
-//         .padding()
-//   }
-//}
+
+struct ReminderRow_Previews: PreviewProvider {
+   static var previews: some View {
+      let reminder = CoreDataSample.createReminders().first!
+      ReminderRow(reminder: reminder)
+         .previewLayout(.sizeThatFits)
+         .frame(width: 300, alignment: .leading)
+         .padding()
+   }
+}

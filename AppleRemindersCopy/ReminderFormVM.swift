@@ -13,7 +13,7 @@ struct ReminderModel {
    var url = ""
    var date = Date()
    var isFlagged = false
-   var list: ReminderList?
+   var list: ReminderListEntity?
    var priority: Priority = .none
    var repetition: Repetition = .never
    var endRepetition: EndRepetition = .never
@@ -22,7 +22,7 @@ struct ReminderModel {
 
 class ReminderFormVM: ObservableObject {
    private let context = PersistenceController.context
-   var reminderToEdit: Reminder? = nil {
+   var reminderToEdit: ReminderEntity? = nil {
       didSet {
          if let reminder = reminderToEdit {
             fillForm(reminder)
@@ -44,15 +44,15 @@ class ReminderFormVM: ObservableObject {
    
    var dateDescription: String? {
       guard isDateSelected else { return nil }
-      let daysFromToday = DateHelper.calendar.numberOfDaysBetween(Date(), and: reminderModel.date)
+      let daysFromToday = DateManager.calendar.numberOfDaysBetween(Date(), and: reminderModel.date)
       return abs(daysFromToday) < 3
-      ? DateHelper.relativeFormatter.localizedString(from: DateComponents(day: daysFromToday)).capitalized
-      : DateHelper.date.string(for: reminderModel.date)
+      ? DateManager.relativeFormatter.localizedString(from: DateComponents(day: daysFromToday)).capitalized
+      : DateManager.date.string(for: reminderModel.date)
    }
    
    var timeDescription: String? {
       guard isTimeSelected else { return nil }
-      return DateHelper.time.string(for: reminderModel.date)
+      return DateManager.time.string(for: reminderModel.date)
    }
    
    func saveChanges() {
@@ -62,12 +62,12 @@ class ReminderFormVM: ObservableObject {
    // MARK: -- Logic
    
    private func createReminder() {
-      let reminder = Reminder(context: context)
+      let reminder = ReminderEntity(context: context)
       reminder.id = UUID()
       fillReminderInfo(for: reminder)
    }
    
-   private func fillReminderInfo(for reminder: Reminder) {
+   private func fillReminderInfo(for reminder: ReminderEntity) {
       reminder.name = reminderModel.title
       reminder.list = reminderModel.list!
       reminder.isFlagged = reminderModel.isFlagged
@@ -95,7 +95,7 @@ class ReminderFormVM: ObservableObject {
       }
    }
    
-   private func fillForm(_ reminder: Reminder) {
+   private func fillForm(_ reminder: ReminderEntity) {
       reminderModel.title = reminder.name
       reminderModel.isFlagged = reminder.isFlagged
       reminderModel.list = reminder.list

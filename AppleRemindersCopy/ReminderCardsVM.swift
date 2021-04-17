@@ -14,12 +14,12 @@ class ReminderCardsVM: ObservableObject {
       enabledCards.count % 2 == 1
    }
    
-   private var enabledCards: [ReminderCard.Model] {
+   private var enabledCards: [ReminderCard.CardData] {
       allCards.filter { $0.isEnabled }
    }
    
    init() {
-      selectedCards = Set(reminderCard.all.filter { $0.isEnabled }.map { $0.title })
+      selectedCards = Set(reminderCard.all.filter { $0.isEnabled }.map { $0.model.title })
    }
    
    // MARK: -- Access
@@ -28,15 +28,15 @@ class ReminderCardsVM: ObservableObject {
       didSet { reminderCard.toggle(cards: selectedCards) }
    }
    
-   var allCards: [ReminderCard.Model] {
+   var allCards: [ReminderCard.CardData] {
       reminderCard.all
    }
    
-   var gridCards: [ReminderCard.Model] {
+   var gridCards: [ReminderCard.CardData] {
       return isSingleCard ? enabledCards.dropLast() : enabledCards
    }
    
-   var singleCard: ReminderCard.Model? {
+   var singleCard: ReminderCard.CardData? {
       isSingleCard ? enabledCards.last : nil
    }
    

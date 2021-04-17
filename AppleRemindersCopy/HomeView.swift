@@ -18,17 +18,19 @@ struct HomeView: View {
       VStack {
          ReminderCardGroupView().padding(.top)
          ReminderListListView()
-         
          Spacer()
       }
       .background(Color.systemGroupedBackground.ignoresSafeArea())
-      .sheet(item: $sheet.activeSheet) {
-         $0.sheetView.environment(\.managedObjectContext, context)
-      }
+      
+      // -- Navigation configuration
       .toolbar { EditButton() }
       .navigationTitleColor(nav.accentColor)
       .add(searchBar).overlay(viewControllerResolver)
       .embedInNavigation(mode: .inline).setupBottomBar()
+      
+      .sheet(item: $sheet.activeSheet) {
+         $0.sheetView.environment(\.managedObjectContext, context)
+      }
    }
    
    private var viewControllerResolver: some View {
@@ -39,6 +41,7 @@ struct HomeView: View {
       .frame(width: 0, height: 0)
    }
 }
+
 
 // MARK: -- Preview
 

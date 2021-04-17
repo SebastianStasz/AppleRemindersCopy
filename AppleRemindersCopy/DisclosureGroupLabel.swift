@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct DisclosureGroupLabel: View {
-   @EnvironmentObject private var sheet: SheetController
    @Environment(\.editMode) private var editMode
-   private let group: ReminderGroup
+   @EnvironmentObject private var sheet: SheetController
+   
+   @FetchRequest private var groupData: FetchedResults<ReminderGroupEntity>
+   private var group: ReminderGroupEntity { groupData.first! }
    
    var body: some View {
       HStack {
@@ -41,8 +43,9 @@ struct DisclosureGroupLabel: View {
       editMode?.wrappedValue == .active
    }
    
-   init(_ group: ReminderGroup) {
-      self.group = group
+   init(_ group: ReminderGroupEntity) {
+      _groupData = FetchRequest(entity: ReminderGroupEntity.entity(), sortDescriptors: [],
+                            predicate: NSPredicate(format: "id == %@", group.id! as CVarArg))
    }
 }
 

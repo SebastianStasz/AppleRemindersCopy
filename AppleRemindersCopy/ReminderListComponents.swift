@@ -1,11 +1,23 @@
 //
-//  ListHeader.swift
+//  ReminderListComponents.swift
 //  AppleRemindersCopy
 //
 //  Created by Sebastian Staszczyk on 08/04/2021.
 //
 
 import SwiftUI
+
+// MARK: -- No Reminders Message
+
+struct NoRemindersMessage: View {
+   var body: some View {
+      Text("No Reminders")
+         .frame(maxWidth: .infinity, alignment: .leading)
+         .opacity(0.2)
+   }
+}
+
+// MARK: -- List Header
 
 struct ListHeader: View {
    let title: String
@@ -24,19 +36,21 @@ struct ListHeader: View {
    }
 }
 
-// MARK: -- Initializer
-
 extension ListHeader {
-   init(list: ReminderList) {
+   init(list: ReminderListEntity) {
       title = list.name
-      color = list.color.color
+      color = list.color
    }
 }
+
 
 // MARK: -- Preview
 
 struct ListHeader_Previews: PreviewProvider {
     static var previews: some View {
-      ListHeader(title: "This week", color: .systemRed)
+      VStack {
+         NoRemindersMessage()
+         ListHeader(title: "This week", color: .systemRed)
+      }
     }
 }

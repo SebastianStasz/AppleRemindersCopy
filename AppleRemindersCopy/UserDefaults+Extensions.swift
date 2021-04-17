@@ -13,7 +13,7 @@ extension UserDefaults {
       case reminderCards
    }
    
-   func reset() {
+   func hardReset() {
          Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
      }
 }

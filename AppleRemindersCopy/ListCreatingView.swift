@@ -11,10 +11,10 @@ struct ListCreatingView: View {
    @Environment(\.managedObjectContext) private var context
    @Environment(\.presentationMode) private var presentation
    @Environment(\.colorScheme) private var scheme
-   @StateObject private var listVM = ListCreatingVM()
-   private let listToEdit: ReminderList?
+   @StateObject private var listVM = ReminderListFormVM()
+   private let listToEdit: ReminderListEntity?
    
-   init(listToEdit: ReminderList? = nil) {
+   init(listToEdit: ReminderListEntity? = nil) {
       self.listToEdit = listToEdit
    }
    

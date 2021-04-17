@@ -8,15 +8,17 @@
 import SwiftUI
 
 struct ReminderListRow: View {
-   @EnvironmentObject private var sheet: SheetController
    @Environment(\.editMode) private var editMode
-   private let isEditingListBlocked: Bool
-   private let isReminderCountShown: Bool
-   private let list: ReminderList?
+   @EnvironmentObject private var sheet: SheetController
+   
    private let title: String
    private let image: String
    private let bgColor: Color
    private let textColor: Color
+   
+   private let list: ReminderListEntity?
+   private let isEditModeBlocked: Bool
+   private let reminderCount: String?
    
    var body: some View {
       HStack(spacing: 16) {
@@ -29,7 +31,7 @@ struct ReminderListRow: View {
          if isEditMode {
             Spacer() ; editButton
             
-         } else if shouldPresentReminderCount {
+         } else if let reminderCount = reminderCount {
             Spacer() ; Text(reminderCount).opacity(0.4)
          }
       }
@@ -42,16 +44,8 @@ struct ReminderListRow: View {
          .onTapGesture { sheet.activeSheet = .addList(list) }
    }
    
-   private var reminderCount: String {
-      String(list!.remindersCount)
-   }
-   
-   private var shouldPresentReminderCount: Bool {
-      isReminderCountShown && list != nil
-   }
-   
    private var isEditMode: Bool {
-      guard !isEditingListBlocked else { return false }
+      guard !isEditModeBlocked else { return false }
       return editMode?.wrappedValue == .active
    }
 }
@@ -60,26 +54,26 @@ struct ReminderListRow: View {
 
 extension ReminderListRow {
    
-   init(card: ReminderCard.Model) {
-      title = card.title
-      image = card.image
-      bgColor = card.color.color
+   init(card: ReminderCard.CardData) {
+      title = card.model.title
+      image = card.model.image
+      bgColor = card.model.color
       textColor = .white
       
-      isReminderCountShown = false
       list = nil
-      isEditingListBlocked = true
+      reminderCount = nil
+      isEditModeBlocked = true
    }
    
-   init(list: ReminderList, showRemindersCount: Bool = true) {
+   init(list: ReminderListEntity, reminderCount: String? = nil) {
       title = list.name
       image = list.icon.sfSymbol
-      bgColor = list.color.color
+      bgColor = list.color
       textColor = .white
       
-      self.isReminderCountShown = showRemindersCount
       self.list = list
-      isEditingListBlocked = false
+      self.reminderCount = reminderCount
+      isEditModeBlocked = false
    }
 }
 

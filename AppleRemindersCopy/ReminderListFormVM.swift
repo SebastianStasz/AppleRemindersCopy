@@ -1,5 +1,5 @@
 //
-//  ListCreatingVM.swift
+//  ReminderListFormVM.swift
 //  AppleRemindersCopy
 //
 //  Created by Sebastian Staszczyk on 11/04/2021.
@@ -7,9 +7,9 @@
 
 import Foundation
 
-class ListCreatingVM: ObservableObject {
+class ReminderListFormVM: ObservableObject {
    private let context = PersistenceController.context
-   var listToEdit: ReminderList? {
+   var listToEdit: ReminderListEntity? {
       didSet { fillFormForEditList(listToEdit!) }
    }
    @Published var name = ""
@@ -25,21 +25,21 @@ class ListCreatingVM: ObservableObject {
       isEditing ? fillListInfo(listToEdit!) : createList()
    }
    
-   private func fillListInfo(_ list: ReminderList) {
+   private func fillListInfo(_ list: ReminderListEntity) {
       list.name = name
       list.icon = icon
-      list.color = color
+      list.color_ = color
    }
    
    private func createList() {
-      let list = ReminderList(context: context)
+      let list = ReminderListEntity(context: context)
       list.id = UUID()
       fillListInfo(list)
    }
    
-   private func fillFormForEditList(_ list: ReminderList) {
+   private func fillFormForEditList(_ list: ReminderListEntity) {
       name = list.name
       icon = list.icon
-      color = list.color
+      color = list.color_
    }
 }

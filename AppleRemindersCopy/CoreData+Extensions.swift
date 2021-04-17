@@ -6,38 +6,54 @@
 //
 
 import Foundation
+import SwiftUI
 
-extension ReminderList {
+extension ReminderListEntity {
+   static let sortByName = NSSortDescriptor(key: "name_", ascending: true)
+   
    var name: String {
-      get { name_! }
+      get { name_ ?? "" }
       set { name_ = newValue }
    }
    
-   var reminders: [Reminder] {
+   var color: Color {
+      color_.color
+   }
+   
+   var reminders: [ReminderEntity] {
       get {
-         let set = reminders_ as? Set<Reminder> ?? []
+         let set = reminders_ as? Set<ReminderEntity> ?? []
          return set.sorted { $0.name < $1.name }
       }
    }
 }
 
-extension ReminderGroup {
+extension ReminderGroupEntity {
+   static let sortByName = NSSortDescriptor(key: "name_", ascending: true)
+   static let filterWithoutGroups = NSPredicate(format: "group == NULL")
+   
    var name: String {
       get { name_! }
       set { name_ = newValue }
    }
    
-   var list: [ReminderList] {
+   var list: [ReminderListEntity] {
       get {
-         let set = list_ as? Set<ReminderList> ?? []
+         let set = list_ as? Set<ReminderListEntity> ?? []
          return set.sorted { $0.name > $1.name }
       }
    }
 }
 
-extension Reminder {
+extension ReminderEntity {
+   static let sortByDate = NSSortDescriptor(key: "date", ascending: true)
+   
    var name: String {
-      get { name_! }
+      get { name_ ?? ""}
       set { name_ = newValue }
+   }
+   
+   var listColor: Color {
+      list.color_.color
    }
 }

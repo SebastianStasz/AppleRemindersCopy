@@ -1,5 +1,5 @@
 //
-//  DateHelper.swift
+//  DateManager.swift
 //  AppleRemindersCopy
 //
 //  Created by Sebastian Staszczyk on 07/04/2021.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DateHelper {
+struct DateManager {
    
    static var calendar: Calendar {
       var calendar = Calendar.current

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="20D74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="Reminder" representedClassName="Reminder" syncable="YES">
+    <entity name="ReminderEntity" representedClassName="ReminderEntity" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="endRepetitionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
@@ -12,25 +12,25 @@
         <attribute name="priority" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="repetition" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="url" optional="YES" attributeType="String"/>
-        <relationship name="list" maxCount="1" deletionRule="Nullify" destinationEntity="ReminderList" inverseName="reminders_" inverseEntity="ReminderList"/>
+        <relationship name="list" maxCount="1" deletionRule="Nullify" destinationEntity="ReminderListEntity" inverseName="reminders_" inverseEntity="ReminderListEntity"/>
     </entity>
-    <entity name="ReminderGroup" representedClassName="ReminderGroup" syncable="YES" codeGenerationType="class">
+    <entity name="ReminderGroupEntity" representedClassName="ReminderGroupEntity" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name_" attributeType="String"/>
-        <relationship name="list_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ReminderList" inverseName="group" inverseEntity="ReminderList"/>
+        <relationship name="list_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ReminderListEntity" inverseName="group" inverseEntity="ReminderListEntity"/>
     </entity>
-    <entity name="ReminderList" representedClassName="ReminderList" syncable="YES">
-        <attribute name="color" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    <entity name="ReminderListEntity" representedClassName="ReminderListEntity" syncable="YES">
+        <attribute name="color_" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="icon" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name_" attributeType="String"/>
         <attribute name="remindersCount" optional="YES" attributeType="Integer 64" derived="YES" derivationExpression="reminders_.@count" usesScalarValueType="YES"/>
-        <relationship name="group" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ReminderGroup" inverseName="list_" inverseEntity="ReminderGroup"/>
-        <relationship name="reminders_" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="list" inverseEntity="Reminder"/>
+        <relationship name="group" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ReminderGroupEntity" inverseName="list_" inverseEntity="ReminderGroupEntity"/>
+        <relationship name="reminders_" toMany="YES" deletionRule="Cascade" destinationEntity="ReminderEntity" inverseName="list" inverseEntity="ReminderEntity"/>
     </entity>
     <elements>
-        <element name="Reminder" positionX="-27.07873535156244" positionY="-6.984802246093757" width="128" height="209"/>
-        <element name="ReminderGroup" positionX="-33.72711181640625" positionY="-133.643798828125" width="128" height="88"/>
-        <element name="ReminderList" positionX="-267.8687744140626" positionY="-130.0307159423828" width="128" height="148"/>
+        <element name="ReminderEntity" positionX="-27.07873535156244" positionY="-6.984802246093757" width="128" height="209"/>
+        <element name="ReminderGroupEntity" positionX="-33.72711181640625" positionY="-133.643798828125" width="128" height="74"/>
+        <element name="ReminderListEntity" positionX="-267.8687744140626" positionY="-130.0307159423828" width="128" height="134"/>
     </elements>
 </model>

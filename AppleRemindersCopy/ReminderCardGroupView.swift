@@ -25,9 +25,9 @@ struct ReminderCardGroupView: View {
    private var reminderCardList: some View {
       List(selection: $reminderCards.selectedCards) {
          Section(header: Text("Customize")) {
-            ForEach(reminderCards.allCards, id: \.self) {
+            ForEach(reminderCards.allCards) {
                ReminderListRow(card: $0)
-                  .tag($0.title)
+                  .tag($0.model.title)
                   .padding(.vertical, 3)
                   .buttonStyle(PlainButtonStyle())
                   .listRowBackground(Color.secondarySystemGroupedBackground)
@@ -40,13 +40,13 @@ struct ReminderCardGroupView: View {
    private var reminderCardsGroupView: some View {
       Group {
          LazyVGrid(columns: columns, spacing: spacing) {
-            ForEach(reminderCards.gridCards, id: \.self) { card in
-               ReminderCardView(reminderCard: card)
+            ForEach(reminderCards.gridCards) { card in
+               ReminderCardView(config: .byCard(card), card: card)
             }
          }
          
          if let card = reminderCards.singleCard {
-            ReminderCardView(reminderCard: card)
+            ReminderCardView(config: .byCard(card), card: card)
          }
       }
       .padding(.horizontal)

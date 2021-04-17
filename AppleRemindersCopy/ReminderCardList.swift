@@ -10,15 +10,16 @@ import Foundation
 import SwiftUI
 
 enum ReminderCardList: Int, Codable {
-   case today
-   case scheduled
-   case flagged
    case all
+   case today
+   case flagged
+   case scheduled
+   case assignedToMe
    
    var predicate: NSPredicate? {
       switch self {
       case .today:
-         let dateRange = DateHelper.getTodayDateRange()
+         let dateRange = DateManager.getTodayDateRange()
          let fromPredicate = NSPredicate(format: "%@ >= %@", Date() as NSDate, dateRange.dateFrom as NSDate)
          let toPredicate = NSPredicate(format: "%@ < %@", Date() as NSDate, dateRange.dateTo as NSDate)
          let isCompleted = NSPredicate(format: "isCompleted == NO")
@@ -26,25 +27,40 @@ enum ReminderCardList: Int, Codable {
          return predicate
       case .flagged:
          return NSPredicate(format: "isCompleted == NO AND isFlagged == YES")
+      case .scheduled:
+         return NSPredicate(format: "isCompleted == NO AND date != NULL")
       default:
          return NSPredicate(format: "isCompleted == NO")
       }
    }
    
-   var accentColor: Color {
+   var view: AnyView {
       switch self {
-      case .today: return .systemBlue
-      case .scheduled: return .systemRed
-      case .all: return .systemGray
-      case .flagged: return .systemOrange
+      case .all:
+         return AnyView(RemindersAll())
+      case .scheduled:
+         return AnyView(RemindersScheduled())
+      case .flagged:
+         return AnyView(RemincerListWithEnvironment())
+      case .today:
+         return AnyView(RemincerListWithEnvironment())
+      case .assignedToMe:
+         return AnyView(RemindersAll()) // Temporary
       }
    }
    
-   var isBottomBarPresented: Bool {
+   var showListName: Bool {
       switch self {
-      case .today: return true
-      case .flagged: return true
-      default: return false
+      case .all: return false
+      default: return true
+      }
+   }
+   
+   var isBottomBarHidden: Bool {
+      switch self {
+      case .today: return false
+      case .flagged: return false
+      default: return true
       }
    }
 }
