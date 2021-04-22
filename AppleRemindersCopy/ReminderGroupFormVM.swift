@@ -10,12 +10,13 @@ import Foundation
 
 class ReminderGroupFormVM: ObservableObject {
    private let coreDataManager = CoreDataManager.shared
-
+   
+   var includedListsCount: String { String(includedListsPlaceholder.count) }
    var group: ReminderGroupEntity? { didSet { updateGroupInfo() } }
    var isValid: Bool { !name.isEmpty }
    
    @Published var name = ""
-   @Published var otherListsPlaceholder: [ReminderListEntity] = []
+   @Published private(set) var otherListsPlaceholder: [ReminderListEntity] = []
    @Published private(set) var includedListsPlaceholder: [ReminderListEntity] = []
    
    // MARK: -- Intents
@@ -34,15 +35,16 @@ class ReminderGroupFormVM: ObservableObject {
    
    func saveChanges() {
       group == nil ? createGroup() : updateGroup(group!)
-      coreDataManager.save()
    }
    
    // MARK: -- Core Data
    
    private func updateGroup(_ group: ReminderGroupEntity) {
       group.name = name
+      _ = otherListsPlaceholder.filter{ $0.group == group }
+         .map { $0.group = coreDataManager.ungroupedGroup }
+      
       _ = includedListsPlaceholder.map{ group.addToList_($0) }
-      _ = otherListsPlaceholder.map{ group.removeFromList_($0) }
    }
    
    private func createGroup() {
@@ -55,7 +57,10 @@ class ReminderGroupFormVM: ObservableObject {
    // MARK: -- Helpers
    
    private func updateGroupInfo() {
-      includedListsPlaceholder = group?.list ?? []
+      let otherLists = coreDataManager.all.filter { $0.name != group?.name }.flatMap{ $0.list }
+      
       name = group?.name ?? ""
+      includedListsPlaceholder = group?.list ?? []
+      otherListsPlaceholder = otherLists
    }
 }

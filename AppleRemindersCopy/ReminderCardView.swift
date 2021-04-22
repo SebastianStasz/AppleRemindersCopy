@@ -8,24 +8,44 @@
 import SwiftUI
 
 struct ReminderCardView: View {
-   @StateObject private var remindersVM = RemindersVM()
-   let config: RemindersVM.Config
-   let card: ReminderCard.CardData
+   @FetchRequest private var reminders: FetchedResults<ReminderEntity>
+   private let card: ReminderCard.CardData
+
+   private var remindersCount: String {
+      String(reminders.count)
+   }
+   
+   init(card: ReminderCard.CardData) {
+      self.card = card
+      _reminders = FetchRequest(entity: ReminderEntity.entity(),
+                                sortDescriptors: [card.model.list.sortDescriptor],
+                                predicate: card.model.list.predicate)
+   }
    
    var body: some View {
       NavigationLink(destination: destination) {
          reminderCardBody
       }
       .buttonStyle(PlainButtonStyle())
-      .onAppear { remindersVM.config = config }
    }
    
    private var destination: some View {
-      card.model.list.view
-         .embedinRemindersView(title: config.title,
-                               accentColor: card.model.color,
-                               hideBottomBar: card.model.list.isBottomBarHidden)
-         .environmentObject(remindersVM)
+      Group {
+         if card.model == .flagged {
+            ReminderListWithList(reminders: reminders.map{$0})
+               .embedinRemindersView(markAsFlagged: true, title: card.model.title, accentColor: card.model.color, hideBottomBar: card.model.list.isBottomBarHidden)
+         } else {
+            Group {
+               if card.model == .today {
+                  ReminderListWithList(reminders: reminders.map{$0})
+               } else if card.model == .scheduled {
+                  RemindersScheduled(reminders: reminders)
+               } else {
+                  RemindersAll()
+               }
+            }.embedinRemindersView(title: card.model.title, accentColor: card.model.color, hideBottomBar: card.model.list.isBottomBarHidden)
+         }
+      }
    }
    
    private var reminderCardBody: some View {
@@ -36,7 +56,7 @@ struct ReminderCardView: View {
             
             Spacer()
             
-            Text(remindersVM.count).font(.title).bold()
+            Text(remindersCount).font(.title).bold()
          }
          
          Text(card.model.title)

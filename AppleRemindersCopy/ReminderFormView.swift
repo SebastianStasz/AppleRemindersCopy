@@ -9,90 +9,68 @@ import SwiftUI
 
 struct ReminderFormView: View {
    @Environment(\.presentationMode) private var presentation
-   @Environment(\.managedObjectContext) private var context
    @StateObject private var form = ReminderFormVM()
-   let reminderList: ReminderListEntity?
-   let reminderToEdit: ReminderEntity?
+   @State private var alert: DiscardChangesAlert?
+   @State private var isEditing = false
    
-   @FetchRequest(entity: ReminderListEntity.entity(), sortDescriptors: [ReminderListEntity.sortByName]
-   ) private var reminderLists: FetchedResults<ReminderListEntity>
+   private let coreDataManager = CoreDataManager.shared
+   let options: ReminderFormOptions?
+   
+   private var reminderLists: [ReminderListEntity] {
+      coreDataManager.all.flatMap { $0.list }
+   }
    
    var body: some View {
       Form {
-         TextField("Title", text: $form.reminderModel.title)
+         TextField("Title", text: $form.form.title)
          
-         if isEditing {
-            TextEditor(text: $form.reminderModel.notes)
-               .overlay(notesPlaceholder, alignment: .topLeading)
-            
-            TextField("URL", text: $form.reminderModel.url)
-            
-            ReminderDetailFormComponents()
-         } else {
-            TextEditor(text: $form.reminderModel.notes)
-               .frame(height: 100).overlay(notesPlaceholder, alignment: .topLeading)
-            
-            Section {
-               NavigationLink(destination: ReminderFormDetailView(saveChanges: saveChanges)) {
-                  detailsLinkLabel
-               }
-            }
-         }
+         if isEditing { ReminderFormEditingView() }
+         else { ReminderFormDefaultView(saveChanges: saveChanges) }
          
-         Picker("List", selection: $form.reminderModel.list) {
-            ForEach(reminderLists) {
-               ReminderListRow(list: $0)
-                  .tag(Optional($0))
-            }
-         }
+         ReminderFormListPicker(reminderLists: reminderLists)
       }
       .toolbar { navigationBar }
-      .embedInNavigation(mode: .inline, title: "New Reminder")
+      .embedInNavigation(mode: .inline, title: title)
       .onAppear(perform: viewDidLoad)
       .environmentObject(form)
-   }
-   
-   private var detailsLinkLabel: some View {
-      VStack(alignment: .leading) {
-         Text("Details")
-         Group {
-            if let date = form.dateDescription {
-               form.timeDescription == nil
-                  ? Text(date)
-                  : Text("\(date) at \(form.timeDescription!)")
-            }
-         }
-         .font(.caption2)
-         .opacity(0.5)
-      }
-   }
-   
-   private var notesPlaceholder: some View {
-      let opacity = form.reminderModel.notes.isEmpty ? 0.2 : 0
-      return Text("Notes").opacity(opacity).padding(.top, 10)
+      .alert(item: $alert) { $0.body }
    }
    
    private var navigationBar: some ToolbarContent {
-      NavigationBar(cancelAction: dismiss,
+      NavigationBar(cancelAction: close,
                     actionText: isEditing ? "Done" : "Add",
                     action: saveChanges,
                     isValid: form.isValid)
    }
    
+   private var title: String {
+      isEditing ? "Edit Reminder" : "New Reminder"
+   }
+   
    // MARK: -- Intents
    
    private func viewDidLoad() {
-      form.reminderToEdit = reminderToEdit
-      if let list = reminderList {
-         form.reminderModel.list = list
-      }
-      else if reminderToEdit == nil, let list = reminderLists.first {
-         form.reminderModel.list = list
+      switch options {
+      case .edit(let reminder):
+         form.reminderToEdit = reminder
+         isEditing = true
+      case .withList(let reminderList):
+         form.reminderToEdit = nil
+         form.form.list = reminderList
+      case .markAsFlagged:
+         form.form.isFlagged = true
+         setDefaultList()
+         form.reminderToEdit = nil
+      case .none:
+         setDefaultList()
+         form.reminderToEdit = nil
       }
    }
    
-   private func dismiss() {
-      presentation.wrappedValue.dismiss()
+   private func setDefaultList() {
+      if let list = reminderLists.first {
+         form.form.list = list
+      }
    }
    
    private func saveChanges() {
@@ -100,24 +78,26 @@ struct ReminderFormView: View {
       dismiss()
    }
    
-   private var isEditing: Bool {
-      reminderToEdit != nil
+   private func close() {
+      form.hasChanged ? presentAlert() : dismiss()
    }
    
-   // MARK: -- Initializer
+   private func presentAlert() {
+      alert = DiscardChangesAlert(presentationMode: presentation, title: title)
+   }
    
-   init(reminderToEdit: ReminderEntity? = nil, reminderList: ReminderListEntity? = nil) {
-      self.reminderToEdit = reminderToEdit
-      self.reminderList = reminderList
+   private func dismiss() {
+      presentation.wrappedValue.dismiss()
    }
 }
+
 
 // MARK: -- Preview
 
 struct ReminderFormView_Previews: PreviewProvider {
    static var previews: some View {
       let persistence = PersistenceController.preview.container
-      ReminderFormView()
+      ReminderFormView(options: nil)
          .environment(\.managedObjectContext, persistence.viewContext)
    }
 }

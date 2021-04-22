@@ -20,7 +20,6 @@ extension ReminderListEntity {
     @NSManaged public var icon: ReminderIcon
     @NSManaged public var id: UUID?
     @NSManaged public var name_: String?
-    @NSManaged public var remindersCount: Int64
     @NSManaged public var group: ReminderGroupEntity?
     @NSManaged public var reminders_: NSSet?
 

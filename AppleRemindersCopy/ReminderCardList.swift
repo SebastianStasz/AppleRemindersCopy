@@ -20,35 +20,27 @@ enum ReminderCardList: Int, Codable {
       switch self {
       case .today:
          let dateRange = DateManager.getTodayDateRange()
-         let fromPredicate = NSPredicate(format: "%@ >= %@", Date() as NSDate, dateRange.dateFrom as NSDate)
-         let toPredicate = NSPredicate(format: "%@ < %@", Date() as NSDate, dateRange.dateTo as NSDate)
-         let isCompleted = NSPredicate(format: "isCompleted == NO")
-         let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fromPredicate, toPredicate, isCompleted])
+         let fromPredicate = NSPredicate(format: "date >= %@", dateRange.dateFrom as NSDate)
+         let toPredicate = NSPredicate(format: "date < %@", dateRange.dateTo as NSDate)
+         let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fromPredicate, toPredicate])
          return predicate
+         
       case .flagged:
-         return NSPredicate(format: "isCompleted == NO AND isFlagged == YES")
+         return ReminderEntity.predicateFlagged
       case .scheduled:
-         return NSPredicate(format: "isCompleted == NO AND date != NULL")
+         return ReminderEntity.predicateScheduled
       default:
-         return NSPredicate(format: "isCompleted == NO")
+         return nil
       }
    }
    
-   var view: AnyView {
+   var sortDescriptor: NSSortDescriptor {
       switch self {
-      case .all:
-         return AnyView(RemindersAll())
-      case .scheduled:
-         return AnyView(RemindersScheduled())
-      case .flagged:
-         return AnyView(RemincerListWithEnvironment())
-      case .today:
-         return AnyView(RemincerListWithEnvironment())
-      case .assignedToMe:
-         return AnyView(RemindersAll()) // Temporary
+      case .scheduled: return ReminderEntity.sortByScheduledDate
+      default: return ReminderEntity.sortByCreatedDate
       }
    }
-   
+
    var showListName: Bool {
       switch self {
       case .all: return false

@@ -9,14 +9,14 @@ import SwiftUI
 
 struct HomeView: View {
    @Environment(\.managedObjectContext) private var context
-   @Environment(\.editMode) private var editMode
    @EnvironmentObject private var nav: NavigationController
    @EnvironmentObject private var sheet: SheetController
    @StateObject private var searchBar: SearchBar = SearchBar()
+   @State private var isEditMode = false
    
    var body: some View {
       VStack {
-         ReminderCardGroupView().padding(.top)
+         ReminderCardGroupView(editMode: $isEditMode).padding(.top)
          ReminderListListView()
          Spacer()
       }
@@ -26,7 +26,7 @@ struct HomeView: View {
       .toolbar { EditButton() }
       .navigationTitleColor(nav.accentColor)
       .add(searchBar).overlay(viewControllerResolver)
-      .embedInNavigation(mode: .inline).setupBottomBar()
+      .embedInNavigation(mode: .inline).setupBottomBar(isEditMode: isEditMode)
       
       .sheet(item: $sheet.activeSheet) {
          $0.sheetView.environment(\.managedObjectContext, context)

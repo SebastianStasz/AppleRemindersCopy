@@ -1,5 +1,5 @@
 //
-//  ListCreatingView.swift
+//  ReminderListFormView.swift
 //  AppleRemindersCopy
 //
 //  Created by Sebastian Staszczyk on 04/04/2021.
@@ -7,32 +7,37 @@
 
 import SwiftUI
 
-struct ListCreatingView: View {
+struct ReminderListFormView: View {
    @Environment(\.managedObjectContext) private var context
    @Environment(\.presentationMode) private var presentation
    @Environment(\.colorScheme) private var scheme
-   @StateObject private var listVM = ReminderListFormVM()
-   private let listToEdit: ReminderListEntity?
+   @EnvironmentObject private var sheet: SheetController
    
-   init(listToEdit: ReminderListEntity? = nil) {
+   @StateObject private var listVM = ReminderListFormVM()
+   @State private var alert: DiscardChangesAlert?
+   private let listToEdit: ReminderListEntity?
+   private let sheetToOpenAfterDismiss: ActiveSheet?
+   
+   init(listToEdit: ReminderListEntity? = nil, sheetToOpenAfterDismiss: ActiveSheet? = nil) {
       self.listToEdit = listToEdit
+      self.sheetToOpenAfterDismiss = sheetToOpenAfterDismiss
    }
    
    private let backgroundColor: Color = .secondarySystemGroupedBackground
    private let mainIconCircleSize: CGFloat = 120
    private let mainPadding: CGFloat = 30
-   private var navigationTitle: String {
+   private var title: String {
       listToEdit == nil ? "New List" : "Name & Appearance"
    }
    
    var body: some View {
       VStack(spacing: mainPadding) {
          
-         ImageInCircle(icon: listVM.icon.sfSymbol, padding: 30, color: listVM.color.color, iconColor: .white)
+         ImageInCircle(icon: listVM.form.icon.sfSymbol, padding: 30, color: listVM.form.color.color, iconColor: .white)
             .frame(width: mainIconCircleSize)
          
-         TextField("", text: $listVM.name)
-            .textFieldStyle(SecondaryTextFieldStyle(color: listVM.color.color))
+         TextField("", text: $listVM.form.name)
+            .textFieldStyle(SecondaryTextFieldStyle(color: listVM.form.color.color))
             .padding(.vertical, 10)
             .padding(.horizontal)
          
@@ -45,8 +50,8 @@ struct ListCreatingView: View {
                
                AdaptiveVGrid(ReminderIcon.allCases, inColumn: 6) { icon in
                   ImageInCircle(icon: icon.sfSymbol, padding: 9)
-                     .selectionIndicator(listVM.icon == icon)
-                     .onTapGesture { listVM.icon = icon }
+                     .selectionIndicator(listVM.form.icon == icon)
+                     .onTapGesture { listVM.form.icon = icon }
                }
                .padding(.bottom, mainPadding)
             }
@@ -58,14 +63,15 @@ struct ListCreatingView: View {
       .edgesIgnoringSafeArea(.bottom)
       .background(backgroundColor.ignoresSafeArea())
       .toolbar { navigationBar }
-      .embedInNavigation(mode: .inline, title: navigationTitle)
+      .embedInNavigation(mode: .inline, title: title)
       .onAppear(perform: viewDidLoad)
+      .alert(item: $alert) { $0.body }
    }
    
    private var navigationBar: some ToolbarContent {
       Group {
          ToolbarItem(placement: .navigationBarLeading) {
-            Button("Cancel", action: dismiss)
+            Button("Cancel", action: close)
          }
          ToolbarItem(placement: .navigationBarTrailing) {
             Button("Done", action: saveChanges)
@@ -78,25 +84,33 @@ struct ListCreatingView: View {
       Circle()
          .fill(color.color)
          .aspectRatio(contentMode: .fill)
-         .selectionIndicator(listVM.color == color)
-         .onTapGesture{ listVM.color = color }
-   }
-   
-   private func viewDidLoad() {
-      if let list = listToEdit {
-         listVM.listToEdit = list
-      }
+         .selectionIndicator(listVM.form.color == color)
+         .onTapGesture{ listVM.form.color = color }
    }
    
    // MARK: -- Intents
    
-   private func dismiss() {
-      presentation.wrappedValue.dismiss()
+   private func close() {
+      listVM.hasChanged ? presentAlert() : dismiss()
    }
    
    private func saveChanges() {
       listVM.saveChanges()
       dismiss()
+   }
+   
+   // MARK: -- Helpers
+   
+   private func presentAlert() {
+      alert = .init(presentationMode: presentation, title: title)
+   }
+   
+   private func dismiss() {
+      sheet.activeSheet = sheetToOpenAfterDismiss
+   }
+   
+   private func viewDidLoad() {
+      listVM.listToEdit = listToEdit
    }
 }
 
@@ -104,7 +118,7 @@ struct ListCreatingView: View {
 
 struct ListCreatingView_Previews: PreviewProvider {
    static var previews: some View {
-      ListCreatingView(listToEdit: nil)
+      ReminderListFormView(listToEdit: nil)
          .previewDevice("iPhone 12")
          .preferredColorScheme(.dark)
    }

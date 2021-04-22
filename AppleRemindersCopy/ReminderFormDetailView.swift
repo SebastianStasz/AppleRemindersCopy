@@ -32,7 +32,7 @@ struct ReminderFormDetailView: View {
          Form {
             ReminderDetailFormComponents()
             
-            TextField("URL", text: $form.reminderModel.url)
+            TextField("URL", text: $form.form.url)
          }
       }
       .navigationBarTitleDisplayMode(.inline)

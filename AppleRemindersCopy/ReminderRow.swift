@@ -8,58 +8,19 @@
 import Combine
 import SwiftUI
 
-class ReminderRowVM: ObservableObject {
-   private let coreDataManager = CoreDataManager.shared
-   private var cancellable: Set<AnyCancellable> = []
-   
-   var listVM: RemindersVM? = nil
-   var reminder: ReminderEntity? = nil { didSet { setReminderInfo() } }
-   
-   @Published var name = ""
-   @Published var isCompleted = false
-   
-   init() {
-      $isCompleted
-         .dropFirst()
-         .debounce(for: .seconds(3), scheduler: DispatchQueue.main)
-         .filter { $0 }
-         .sink { [weak self] _ in
-               self?.deleteReminder()
-         }
-         .store(in: &cancellable)
-   }
-   
-   func selectionStarted() {
-      listVM!.selectedReminder = reminder
-   }
-   
-   func selectionEnded() {
-      listVM!.selectedReminder = nil
-      if name.isEmpty { deleteReminder() }
-      else if name != reminder?.name {
-         reminder?.name = name
-         coreDataManager.save()
-      }
-   }
-   
-   private func deleteReminder() {
-      let index = (listVM?.reminders.firstIndex(of: reminder!)!)!
-      listVM?.removeFromList(at: index)
-      coreDataManager.delete(reminder!)
-   }
-   
-   private func setReminderInfo() {
-      name = reminder!.name
-      isCompleted = reminder!.isCompleted
-   }
-}
-
 struct ReminderRow: View {
    @EnvironmentObject private var sheet: SheetController
-   @EnvironmentObject private var listVM: RemindersVM
    @StateObject private var reminderVM = ReminderRowVM()
-   let reminder: ReminderEntity
-
+   @Binding var selectedReminder: ReminderEntity?
+   @ObservedObject var reminder: ReminderEntity
+   let isListNameShown: Bool
+   
+   init(reminder: ReminderEntity, selectedReminder: Binding<ReminderEntity?>, showListName: Bool = false) {
+      self.reminder = reminder
+      _selectedReminder = selectedReminder
+      isListNameShown = showListName
+   }
+   
    var body: some View {
       HStack {
          HStack(spacing: 15) {
@@ -68,10 +29,10 @@ struct ReminderRow: View {
             
             VStack(alignment: .leading, spacing: 6) {
                TextField("", text: $reminderVM.name) { isFocused in
-                  isFocused ? reminderVM.selectionStarted() : reminderVM.selectionEnded()
+                  isFocused ? selectionStarted() : selectionEnded()
                }
                
-               if listVM.config?.showListName ?? false {
+               if isListNameShown {
                   Text(reminder.list.name).foregroundColor(.gray)
                }
             }
@@ -79,10 +40,18 @@ struct ReminderRow: View {
          
          Spacer()
          
-         if listVM.selectedReminder == reminder { detailsButton }
+         if reminder.isFlagged {
+            Image(systemName: "flag.fill")
+               .font(.subheadline)
+               .foregroundColor(.systemOrange)
+               .padding(.trailing)
+         }
+         
+         if selectedReminder == reminder { detailsButton }
       }
       .padding(.top, 5)
-      .onAppear(perform: viewDidAppear)
+      .onAppear(perform: updateViewModel)
+      .onChange(of: reminder.name) { _ in updateViewModel() }
    }
 
    private var detailsButton: some View {
@@ -93,29 +62,37 @@ struct ReminderRow: View {
          .onTapGesture { showReminderForm() }
    }
    
-   // MARK: -- Functions
-
-   private func viewDidAppear() {
-      reminderVM.listVM = listVM
-      reminderVM.reminder = reminder
+   // MARK: -- Intents
+   
+   private func selectionStarted() {
+      selectedReminder = reminder
+   }
+   
+   private func selectionEnded() {
+      selectedReminder = nil
+      reminderVM.selectionEnded()
    }
    
    private func showReminderForm() {
       hideKeyboard()
-      reminderVM.selectionEnded()
-      sheet.activeSheet = .addReminder(reminder, nil)
+      selectionEnded()
+      sheet.activeSheet = .addReminder(options: .edit(reminder: reminder))
+   }
+   
+   private func updateViewModel() {
+      reminderVM.reminder = reminder
    }
 }
 
 
 // MARK: -- Preview
 
-struct ReminderRow_Previews: PreviewProvider {
-   static var previews: some View {
-      let reminder = CoreDataSample.createReminders().first!
-      ReminderRow(reminder: reminder)
-         .previewLayout(.sizeThatFits)
-         .frame(width: 300, alignment: .leading)
-         .padding()
-   }
-}
+//struct ReminderRow_Previews: PreviewProvider {
+//   static var previews: some View {
+//      let reminder = CoreDataSample.createReminders().first!
+//      ReminderRow(reminder: reminder)
+//         .previewLayout(.sizeThatFits)
+//         .frame(width: 300, alignment: .leading)
+//         .padding()
+//   }
+//}

@@ -2,7 +2,7 @@
 //  ReminderEntity+CoreDataClass.swift
 //  AppleRemindersCopy
 //
-//  Created by Sebastian Staszczyk on 15/04/2021.
+//  Created by Sebastian Staszczyk on 20/04/2021.
 //
 //
 

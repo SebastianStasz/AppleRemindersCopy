@@ -11,20 +11,20 @@ struct ReminderFormRepeatSelection: View {
    @EnvironmentObject private var form: ReminderFormVM
    
    private var endRepetitionSelection: String {
-      form.reminderModel.endRepetition == .date
-         ? DateManager.date.string(from: form.reminderModel.endRepetitionDate)
+      form.form.endRepetition == .date
+         ? DateManager.date.string(from: form.form.endRepetitionDate)
          : "Never"
    }
    
    var body: some View {
       Section {
-         Picker(selection: $form.reminderModel.repetition,
+         Picker(selection: $form.form.repetition,
                 label: ReminderFormLabel.repeat.view)
          {
             ForEach(Repetition.allCases) { Text($0.name).tag($0) }
          }
          
-         if form.reminderModel.repetition != .never {
+         if form.form.repetition != .never {
             NavigationLink(destination: endRepetitionDetailView) {
                HStack {
                   Text("End Repeat")
@@ -38,7 +38,7 @@ struct ReminderFormRepeatSelection: View {
    
    private var endRepetitionDetailView: some View {
       VStack {
-         Picker(selection: $form.reminderModel.endRepetition,
+         Picker(selection: $form.form.endRepetition,
                 label: Text("End Repetition"))
          {
             ForEach(EndRepetition.allCases) { Text($0.name).tag($0) }
@@ -46,9 +46,9 @@ struct ReminderFormRepeatSelection: View {
          .pickerStyle(SegmentedPickerStyle())
          .padding()
          
-         DatePicker("Date", selection: $form.reminderModel.endRepetitionDate, displayedComponents: [.date])
+         DatePicker("Date", selection: $form.form.endRepetitionDate, displayedComponents: [.date])
             .datePickerStyle(GraphicalDatePickerStyle())
-            .disabled(form.reminderModel.endRepetition == .never)
+            .disabled(form.form.endRepetition == .never)
          
          Spacer()
       }

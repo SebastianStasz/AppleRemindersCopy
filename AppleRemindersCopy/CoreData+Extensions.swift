@@ -10,30 +10,29 @@ import SwiftUI
 
 extension ReminderListEntity {
    static let sortByName = NSSortDescriptor(key: "name_", ascending: true)
+   static let sortByCreatedDate = NSSortDescriptor(key: "createdDate_", ascending: true)
    
    var name: String {
       get { name_ ?? "" }
       set { name_ = newValue }
    }
    
-   var color: Color {
-      color_.color
-   }
-   
    var reminders: [ReminderEntity] {
       get {
          let set = reminders_ as? Set<ReminderEntity> ?? []
-         return set.sorted { $0.name < $1.name }
+         return set.sorted { $0.createdDate < $1.createdDate }
       }
    }
+   
+   var image: String { icon.sfSymbol }
+   var color: Color { color_.color }
 }
 
 extension ReminderGroupEntity {
    static let sortByName = NSSortDescriptor(key: "name_", ascending: true)
-   static let filterWithoutGroups = NSPredicate(format: "group == NULL")
    
    var name: String {
-      get { name_! }
+      get { name_ ?? "I should not be here" }
       set { name_ = newValue }
    }
    
@@ -46,14 +45,17 @@ extension ReminderGroupEntity {
 }
 
 extension ReminderEntity {
-   static let sortByDate = NSSortDescriptor(key: "date", ascending: true)
+   static let sortByScheduledDate = NSSortDescriptor(key: "date", ascending: true)
+   static let sortByCreatedDate = NSSortDescriptor(key: "createdDate_", ascending: true)
+   
+   static let predicateFlagged = NSPredicate(format: "isFlagged == YES")
+   static let predicateScheduled = NSPredicate(format: "date != NULL")
    
    var name: String {
       get { name_ ?? ""}
       set { name_ = newValue }
    }
    
-   var listColor: Color {
-      list.color_.color
-   }
+   var createdDate: Date { createdDate_! }
+   var listColor: Color { list.color_.color }
 }

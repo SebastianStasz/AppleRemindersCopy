@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct AppleRemindersCopyApp: App {
-   private let context = PersistenceController.preview.container.viewContext
+   private let context = CoreDataManager.shared.context
    @Environment(\.scenePhase) private var scenePhase
    
    @StateObject private var sheetController = SheetController()
@@ -21,6 +21,7 @@ struct AppleRemindersCopyApp: App {
             .environment(\.managedObjectContext, context)
             .environmentObject(navigationController)
             .environmentObject(sheetController)
+            .environment(\.locale, Locale(identifier: "pl"))
       }
       .onChange(of: scenePhase) { phase in
           if phase == .background {

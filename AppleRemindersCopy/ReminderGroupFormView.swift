@@ -5,28 +5,15 @@
 //  Created by Sebastian Staszczyk on 06/04/2021.
 //
 
-import CoreData
 import SwiftUI
 
 struct ReminderGroupFormView: View {
    @Environment(\.presentationMode) private var presentation
-   @FetchRequest private var fetchedLists: FetchedResults<ReminderListEntity>
    @StateObject private var groupVM = ReminderGroupFormVM()
    let group: ReminderGroupEntity?
    
-   private var otherLists: [ReminderListEntity] {
-      fetchedLists.map{$0}
-   }
-   
    init(group: ReminderGroupEntity? = nil) {
       self.group = group
-      var predicate: NSPredicate
-      if let group = group {
-         predicate = NSPredicate(format: "group == nil OR group != %@", group)
-      } else {
-         predicate = NSPredicate(format: "group == nil")
-      }
-      _fetchedLists = FetchRequest(entity: ReminderListEntity.entity(), sortDescriptors: [], predicate: predicate)
    }
    
    var body: some View {
@@ -35,15 +22,14 @@ struct ReminderGroupFormView: View {
          
          NavigationLink(destination: GroupInfoInclude(groupVM: groupVM)) {
             HStack {
-               Text("Include")
-               Spacer()
-               Text("\(String((group?.list.count)!)) Lists")
+               Text("Include") ; Spacer()
+               Text("\(groupVM.includedListsCount) Lists")
             }
          }
       }
       .toolbar { navigationBar }
-      .embedInNavigation(mode: .inline, title: "Group Info")
-      .onAppear(perform: viewDidLoad)
+      .embedInNavigation(mode: .inline, title: navigationTitle)
+      .onAppear(perform: sendGroupToViewModel)
    }
    
    private var navigationBar: some ToolbarContent {
@@ -52,30 +38,36 @@ struct ReminderGroupFormView: View {
    
    // MARK: -- Intents
    
-   private func dismiss() {
-      presentation.wrappedValue.dismiss()
-   }
-   
    private func createList() {
       groupVM.saveChanges()
       dismiss()
    }
    
-   private func viewDidLoad() {
+   private func dismiss() {
+      presentation.wrappedValue.dismiss()
+   }
+   
+   private func sendGroupToViewModel() {
       groupVM.group = group
-      groupVM.otherListsPlaceholder = otherLists.map{$0}
+   }
+   
+   // MARK: -- Helpers
+   
+   private var navigationTitle: String {
+      group != nil ? "Group Info" : "New Group"
    }
 }
+
 
 // MARK: -- Preview
 
 struct GroupEditingView_Previews: PreviewProvider {
    static var previews: some View {
-      let persistence = PersistenceController.preview.container
-      let groupList = CoreDataSample.createSampleGroupLists()
+      let context = CoreDataManager.shared.context
+      let groupList = CoreDataSample.createReminderGroups(context: context)
       
       ReminderGroupFormView(group: groupList[0])
-         .environment(\.managedObjectContext, persistence.viewContext)
+         .environment(\.managedObjectContext, context)
    }
 }
 

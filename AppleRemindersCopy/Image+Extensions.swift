@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension Image {
-   func embedInCircle(bgColor: Color, textColor: Color = .white, size: CGFloat = 30, padding: CGFloat = 7) -> some View {
+   func embedInCircle(bgColor: Color, textColor: Color = .white, size: CGFloat = 32, padding: CGFloat = 7) -> some View {
       Circle()
          .foregroundColor(bgColor)
          .frame(width: size, height: size)

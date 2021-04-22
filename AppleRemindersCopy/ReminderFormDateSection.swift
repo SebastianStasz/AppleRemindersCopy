@@ -14,33 +14,33 @@ struct ReminderFormDateSection: View {
    var body: some View {
       Section {
          ExtendableLabel(extendedLabel: $extendedLabel,
-                         isToggle: $form.isDateSelected,
+                         isToggle: $form.form.isDateSelected,
                          label: .date,
                          title: ReminderFormLabel.date(form.dateDescription))
          {
-            DatePicker("Date", selection: $form.reminderModel.date,
+            DatePicker("Date", selection: $form.form.date,
                        displayedComponents: [.date])
          }
          
          ExtendableLabel(extendedLabel: $extendedLabel,
-                         isToggle: $form.isTimeSelected,
+                         isToggle: $form.form.isTimeSelected,
                          label: .time,
                          title: ReminderFormLabel.time(form.timeDescription))
          {
-            DatePicker("Time", selection: $form.reminderModel.date,
+            DatePicker("Time", selection: $form.form.date,
                        displayedComponents: [.hourAndMinute])
          }
       }
       .datePickerStyle(GraphicalDatePickerStyle())
       
-      .onChange(of: form.isDateSelected) {
+      .onChange(of: form.form.isDateSelected) {
          if $0 {
-            extendedLabel = form.isTimeSelected ? .time : .date }
-         else { form.isTimeSelected = false }
+            extendedLabel = form.form.isTimeSelected ? .time : .date }
+         else { form.form.isTimeSelected = false }
       }
-      .onChange(of: form.isTimeSelected) {
+      .onChange(of: form.form.isTimeSelected) {
          if $0 {
-            form.isDateSelected = true
+            form.form.isDateSelected = true
             extendedLabel = .time
          }
       }

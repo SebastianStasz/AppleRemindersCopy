@@ -10,15 +10,20 @@ import SwiftUI
 struct ReminderCardGroupView: View {
    @Environment(\.editMode) private var editMode
    @StateObject private var reminderCards = ReminderCardsVM()
+   @Binding var editModeSwitcher: Bool
    
-   init() {
+   init(editMode: Binding<Bool>) {
       UITableViewCell.appearance().multipleSelectionBackgroundView = UIView()
+      _editModeSwitcher = editMode
    }
    
    var body: some View {
       VStack(spacing: spacing) {
          if isEditingMode { reminderCardList }
          else { reminderCardsGroupView }
+      }
+      .onChange(of: editMode?.wrappedValue) {
+         editModeSwitcher = $0 == .active 
       }
    }
 
@@ -41,12 +46,12 @@ struct ReminderCardGroupView: View {
       Group {
          LazyVGrid(columns: columns, spacing: spacing) {
             ForEach(reminderCards.gridCards) { card in
-               ReminderCardView(config: .byCard(card), card: card)
+               ReminderCardView(card: card)
             }
          }
          
          if let card = reminderCards.singleCard {
-            ReminderCardView(config: .byCard(card), card: card)
+            ReminderCardView(card: card)
          }
       }
       .padding(.horizontal)
@@ -65,7 +70,7 @@ struct ReminderCardGroupView: View {
 
 struct ReminderCardsGroupView_Previews: PreviewProvider {
     static var previews: some View {
-      ReminderCardGroupView()
+      ReminderCardGroupView(editMode: .constant(false))
          .preferredColorScheme(.light)
          .environment(\.editMode, Binding.constant(EditMode.inactive))
     }

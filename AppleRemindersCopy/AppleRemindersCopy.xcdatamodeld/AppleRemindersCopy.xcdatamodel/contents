@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="20D74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="ReminderEntity" representedClassName="ReminderEntity" syncable="YES">
+        <attribute name="createdDate_" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="endRepetitionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="isCompleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isFlagged" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isTimeSelected" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="name_" attributeType="String"/>
@@ -24,13 +24,12 @@
         <attribute name="icon" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name_" attributeType="String"/>
-        <attribute name="remindersCount" optional="YES" attributeType="Integer 64" derived="YES" derivationExpression="reminders_.@count" usesScalarValueType="YES"/>
         <relationship name="group" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ReminderGroupEntity" inverseName="list_" inverseEntity="ReminderGroupEntity"/>
-        <relationship name="reminders_" toMany="YES" deletionRule="Cascade" destinationEntity="ReminderEntity" inverseName="list" inverseEntity="ReminderEntity"/>
+        <relationship name="reminders_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ReminderEntity" inverseName="list" inverseEntity="ReminderEntity"/>
     </entity>
     <elements>
         <element name="ReminderEntity" positionX="-27.07873535156244" positionY="-6.984802246093757" width="128" height="209"/>
         <element name="ReminderGroupEntity" positionX="-33.72711181640625" positionY="-133.643798828125" width="128" height="74"/>
-        <element name="ReminderListEntity" positionX="-267.8687744140626" positionY="-130.0307159423828" width="128" height="134"/>
+        <element name="ReminderListEntity" positionX="-267.8687744140626" positionY="-130.0307159423828" width="128" height="119"/>
     </elements>
 </model>

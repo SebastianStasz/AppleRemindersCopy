@@ -1,5 +1,5 @@
 //
-//  ReminderListComponents.swift
+//  SmallViewComponents.swift
 //  AppleRemindersCopy
 //
 //  Created by Sebastian Staszczyk on 08/04/2021.
@@ -7,13 +7,27 @@
 
 import SwiftUI
 
+// MARK: -- Empty ReminderList List
+
+struct EmptyListView: View {
+    var body: some View {
+      VStack(spacing: 20) {
+         
+         Image(systemName: "eyeglasses")
+            .font(.largeTitle)
+         
+         Text("No Reminder Lists")
+            .font(.title2)
+      }
+      .opacity(0.3)
+    }
+}
+
 // MARK: -- No Reminders Message
 
 struct NoRemindersMessage: View {
    var body: some View {
-      Text("No Reminders")
-         .frame(maxWidth: .infinity, alignment: .leading)
-         .opacity(0.2)
+      Text("No Reminders").opacity(0.5)
    }
 }
 
@@ -33,6 +47,7 @@ struct ListHeader: View {
          .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
          .oneEdgeBorder(edge: .top, lineWidth: 1, color: Color.primary.opacity(0.1))
          .background(Color.systemBackground)
+         .animation(.none)
    }
 }
 

@@ -5,9 +5,10 @@
 //  Created by Sebastian Staszczyk on 09/04/2021.
 //
 
+import Combine
 import Foundation
 
-struct ReminderModel {
+struct ReminderForm {
    var title = ""
    var notes = ""
    var url = ""
@@ -18,41 +19,38 @@ struct ReminderModel {
    var repetition: Repetition = .never
    var endRepetition: EndRepetition = .never
    var endRepetitionDate = Date()
+   
+   var isDateSelected = false
+   var isTimeSelected = false
+   var isLocationSelected = false
+   var isMessagingSelected = false
 }
 
 class ReminderFormVM: ObservableObject {
-   private let context = PersistenceController.context
-   var reminderToEdit: ReminderEntity? = nil {
-      didSet {
-         if let reminder = reminderToEdit {
-            fillForm(reminder)
-         }
-      }
-   }
+   private var cancellable: Set<AnyCancellable> = []
+   private let coreDataManager = CoreDataManager.shared
+   var reminderToEdit: ReminderEntity? = nil { didSet { fillForm() } }
    
    // MARK: -- Acces
    
-   @Published var reminderModel = ReminderModel()
-   @Published var isDateSelected = false
-   @Published var isTimeSelected = false
-   @Published var isLocationSelected = false
-   @Published var isMessagingSelected = false
+   @Published var form = ReminderForm()
+   @Published private(set) var hasChanged = false
    
    var isValid: Bool {
-      !reminderModel.title.isEmpty && reminderModel.list != nil
+      !form.title.isEmpty && form.list != nil
    }
    
    var dateDescription: String? {
-      guard isDateSelected else { return nil }
-      let daysFromToday = DateManager.calendar.numberOfDaysBetween(Date(), and: reminderModel.date)
+      guard form.isDateSelected else { return nil }
+      let daysFromToday = DateManager.calendar.numberOfDaysBetween(Date(), and: form.date)
       return abs(daysFromToday) < 3
       ? DateManager.relativeFormatter.localizedString(from: DateComponents(day: daysFromToday)).capitalized
-      : DateManager.date.string(for: reminderModel.date)
+      : DateManager.date.string(for: form.date)
    }
    
    var timeDescription: String? {
-      guard isTimeSelected else { return nil }
-      return DateManager.time.string(for: reminderModel.date)
+      guard form.isTimeSelected else { return nil }
+      return DateManager.time.string(for: form.date)
    }
    
    func saveChanges() {
@@ -62,64 +60,71 @@ class ReminderFormVM: ObservableObject {
    // MARK: -- Logic
    
    private func createReminder() {
-      let reminder = ReminderEntity(context: context)
+      let reminder = ReminderEntity(context: coreDataManager.context)
       reminder.id = UUID()
+      reminder.createdDate_ = Date()
       fillReminderInfo(for: reminder)
    }
    
    private func fillReminderInfo(for reminder: ReminderEntity) {
-      reminder.name = reminderModel.title
-      reminder.list = reminderModel.list!
-      reminder.isFlagged = reminderModel.isFlagged
-      reminder.priority = reminderModel.priority
-      reminder.repetition = reminderModel.repetition
+      reminder.name = form.title
+      reminder.notes = form.notes
+      reminder.url = form.url
+      reminder.isFlagged = form.isFlagged
+      reminder.priority = form.priority
+      reminder.repetition = form.repetition
       
-      if reminderModel.endRepetition == .date {
-         reminder.endRepetitionDate = reminderModel.endRepetitionDate
+      if form.endRepetition == .date {
+         reminder.endRepetitionDate = form.endRepetitionDate
       }
       
-      if isDateSelected {
-         reminder.date = reminderModel.date
+      if form.isDateSelected {
+         reminder.date = form.date
+      } else {
+         reminder.date = nil
       }
       
-      if isTimeSelected {
+      if form.isTimeSelected {
          reminder.isTimeSelected = true
       }
-      
-      if !reminderModel.notes.isEmpty {
-         reminder.notes = reminderModel.notes
-      }
-      
-      if !reminderModel.url.isEmpty {
-         reminder.url = reminderModel.url
-      }
+
+      form.list?.addToReminders_(reminder)
    }
    
-   private func fillForm(_ reminder: ReminderEntity) {
-      reminderModel.title = reminder.name
-      reminderModel.isFlagged = reminder.isFlagged
-      reminderModel.list = reminder.list
-      reminderModel.priority = reminder.priority
-      reminderModel.repetition = reminder.repetition
-      isTimeSelected = reminder.isTimeSelected
-      
-      if let endRepetitionDate = reminder.endRepetitionDate {
-         reminderModel.endRepetition = .date
-         reminderModel.endRepetitionDate = endRepetitionDate
+   private func fillForm() {
+      if let reminder = reminderToEdit {
+         form.title = reminder.name
+         form.isFlagged = reminder.isFlagged
+         form.list = reminder.list
+         form.priority = reminder.priority
+         form.repetition = reminder.repetition
+         form.isTimeSelected = reminder.isTimeSelected
+         
+         if let endRepetitionDate = reminder.endRepetitionDate {
+            form.endRepetition = .date
+            form.endRepetitionDate = endRepetitionDate
+         }
+         
+         if let date = reminder.date {
+            form.isDateSelected = true
+            form.date = date
+         }
+         
+         if let notes = reminder.notes {
+            form.notes = notes
+         }
+         
+         if let url = reminder.url {
+            form.url = url
+         }
       }
-      
-      if let date = reminder.date {
-         isDateSelected = true
-         reminderModel.date = date
-      }
-      
-      if let notes = reminder.notes {
-         reminderModel.notes = notes
-      }
-      
-      if let url = reminder.url {
-         reminderModel.url = url
-      }
+      lookForChanges()
+   }
+   
+   private func lookForChanges() {
+      $form.dropFirst()
+         .sink { [weak self] _ in self?.hasChanged = true }
+         .store(in: &cancellable)
    }
 }
 

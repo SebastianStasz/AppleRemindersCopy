@@ -10,7 +10,8 @@ import SwiftUI
 struct RemindersView: ViewModifier {
    @EnvironmentObject private var sheet: SheetController
    @EnvironmentObject private var nav: NavigationController
-   var listForReminder: ReminderListEntity? = nil
+   let listForReminder: ReminderListEntity?
+   let markAsFlagged: Bool
    let hideBottomBar: Bool
    let accentColor: Color
    let title: String
@@ -26,18 +27,25 @@ struct RemindersView: ViewModifier {
    }
    
    private func viewDidDisappear() {
-      sheet.reminderList = nil
+      sheet.restoreToDefaults()
       nav.restoreDefaultSettings()
    }
    
    private func viewDidAppear() {
       sheet.reminderList = listForReminder
+      sheet.markAsFlagged = markAsFlagged
       nav.setupBottomBar(hideBottomBar: hideBottomBar, color: accentColor, showAddListBtn: false)
    }
 }
 
 extension View {
-   func embedinRemindersView(title: String, accentColor: Color, hideBottomBar: Bool) -> some View {
-      self.modifier(RemindersView(hideBottomBar: hideBottomBar, accentColor: accentColor, title: title))
+   func embedinRemindersView(list: ReminderListEntity? = nil, markAsFlagged: Bool = false, title: String, accentColor: Color, hideBottomBar: Bool) -> some View
+   {
+      self.modifier(RemindersView(listForReminder: list,
+                                  markAsFlagged: markAsFlagged,
+                                  hideBottomBar: hideBottomBar,
+                                  accentColor: accentColor,
+                                  title: title))
    }
 }
+

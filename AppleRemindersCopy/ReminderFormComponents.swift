@@ -12,10 +12,10 @@ struct ReminderFormPrioritySelection: View {
    
    var body: some View {
       Section {
-         Toggle(isOn: $form.reminderModel.isFlagged) {
+         Toggle(isOn: $form.form.isFlagged) {
             ReminderFormLabel.flag(nil).view
          }
-         Picker(selection: $form.reminderModel.priority,
+         Picker(selection: $form.form.priority,
                 label: ReminderFormLabel.priority.view)
          {
             ForEach(Priority.allCases) { Text($0.name).tag($0) }
@@ -30,7 +30,7 @@ struct ReminderFormLocationSelection: View {
    
    var body: some View {
       Section {
-         Toggle(isOn: $form.isLocationSelected) {
+         Toggle(isOn: $form.form.isLocationSelected) {
             ReminderFormLabel.location(nil).view
          }
       }
@@ -43,7 +43,7 @@ struct ReminderFormMessagingSelection: View {
    
    var body: some View {
       Section {
-         Toggle(isOn: $form.isMessagingSelected) {
+         Toggle(isOn: $form.form.isMessagingSelected) {
             ReminderFormLabel.messeging(nil).view
          }
          Text(messagingInfo)

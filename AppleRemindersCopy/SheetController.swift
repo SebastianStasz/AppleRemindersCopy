@@ -8,23 +8,54 @@
 import Foundation
 import SwiftUI
 
-class SheetController: ObservableObject {
-   @Published var activeSheet: ActiveSheet? = nil
-   var reminderList: ReminderListEntity?
+enum ReminderFormOptions {
+   case edit(reminder: ReminderEntity)
+   case withList(ReminderListEntity)
+   case markAsFlagged
 }
 
-enum ActiveSheet: Identifiable {
-   case addReminder(ReminderEntity?, ReminderListEntity?)
-   case addList(ReminderListEntity?)
+class SheetController: ObservableObject {
+   @Published var activeSheet: ActiveSheet? = nil
+   @Published var activeActionSheet: ActiveActionSheet? = nil
+   
+   var reminderList: ReminderListEntity?
+   var markAsFlagged: Bool = false
+   
+   func restoreToDefaults() {
+      reminderList = nil
+      markAsFlagged = false
+   }
+}
+
+enum ActiveActionSheet: Identifiable {
+   case deleteGroup(ReminderListListVM, ReminderGroupEntity)
+   
+   var view: ActionSheet {
+      switch self {
+      case .deleteGroup(let viewModel, let group):
+         return DeleteGroupActionSheet(reminderGroupsVM: viewModel, group: group).sheet
+      }
+   }
+   
+   var id: Int {
+      switch self {
+      case .deleteGroup: return 0
+      }
+   }
+}
+
+indirect enum ActiveSheet: Identifiable {
+   case addReminder(options: ReminderFormOptions?)
+   case addList(ReminderListEntity?, ActiveSheet?)
    case addGroup(ReminderGroupEntity?)
    
    var sheetView: some View {
       Group {
          switch self {
-         case .addReminder(let reminder, let list):
-            ReminderFormView(reminderToEdit: reminder, reminderList: list)
-         case .addList(let list):
-            ListCreatingView(listToEdit: list)
+         case .addReminder(let options):
+            ReminderFormView(options: options)
+         case .addList(let list, let sheetToOpen):
+            ReminderListFormView(listToEdit: list, sheetToOpenAfterDismiss: sheetToOpen)
          case .addGroup(let group):
             ReminderGroupFormView(group: group)
          }

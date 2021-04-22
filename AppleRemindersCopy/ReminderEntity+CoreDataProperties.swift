@@ -2,7 +2,7 @@
 //  ReminderEntity+CoreDataProperties.swift
 //  AppleRemindersCopy
 //
-//  Created by Sebastian Staszczyk on 15/04/2021.
+//  Created by Sebastian Staszczyk on 20/04/2021.
 //
 //
 
@@ -19,7 +19,6 @@ extension ReminderEntity {
     @NSManaged public var date: Date?
     @NSManaged public var endRepetitionDate: Date?
     @NSManaged public var id: UUID?
-    @NSManaged public var isCompleted: Bool
     @NSManaged public var isFlagged: Bool
     @NSManaged public var isTimeSelected: Bool
     @NSManaged public var name_: String?
@@ -27,8 +26,8 @@ extension ReminderEntity {
     @NSManaged public var priority: Priority
     @NSManaged public var repetition: Repetition
     @NSManaged public var url: String?
+    @NSManaged public var createdDate_: Date?
     @NSManaged public var list: ReminderListEntity
-
 }
 
 extension ReminderEntity : Identifiable {

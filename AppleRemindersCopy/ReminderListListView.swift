@@ -8,49 +8,29 @@
 import SwiftUI
 
 struct ReminderListListView: View {
-   @Environment(\.editMode) private var editMode
+   @Environment(\.managedObjectContext) private var context
    @EnvironmentObject private var sheet: SheetController
-   
-   @FetchRequest(entity: ReminderGroupEntity.entity(),
-                 sortDescriptors: [ReminderGroupEntity.sortByName]
-   ) private var reminderGroups: FetchedResults<ReminderGroupEntity>
-   
-   @FetchRequest(entity: ReminderListEntity.entity(),
-                 sortDescriptors: [ReminderListEntity.sortByName],
-                 predicate: ReminderGroupEntity.filterWithoutGroups
-   ) private var ungroupedLists: FetchedResults<ReminderListEntity>
+   @StateObject private var reminderListsVM = ReminderListListVM(coreDataManager: CoreDataManager.shared)
 
-   var body: some View { 
-      List {
-         Section(header: listHeader) {
-            ForEach(reminderGroups) { group in
-               DisclosureGroup {
-                  ReminderListList(reminderLists: group.list)
-               }
-               label: {
-                  DisclosureGroupLabel(group).environment(\.editMode, editMode)
-               }
+   var body: some View {
+      if reminderListsVM.isEmpty {
+         EmptyListView().padding(.top, 100)
+      } else {
+         List {
+            Section(header: listHeader) {
+               ReminderGroupList(reminderGroupsVM: reminderListsVM)
+               ReminderListList(reminderLists: reminderListsVM.ungroupedGroup.list)
             }
-            .onDelete(perform: delete)
-            .onMove { indexSet, index in } // TODO: Reordering
-            
-            ReminderListList(reminderLists: ungroupedLists.map {$0})
          }
+         .listStyle(InsetGroupedListStyle())
       }
-      .listStyle(InsetGroupedListStyle())
    }
-   
+
    private var listHeader: some View {
       Text("My Lists")
          .foregroundColor(.primary)
          .font(.title2).bold()
          .padding(.leading, 7)
-   }
-   
-   private func delete(at indexSet: IndexSet) {
-      let index = indexSet.map{ $0 }.first!
-      let group = reminderGroups[index]
-      CoreDataManager.shared.delete(group)
    }
 }
 

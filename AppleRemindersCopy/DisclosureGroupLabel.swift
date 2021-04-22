@@ -10,9 +10,7 @@ import SwiftUI
 struct DisclosureGroupLabel: View {
    @Environment(\.editMode) private var editMode
    @EnvironmentObject private var sheet: SheetController
-   
-   @FetchRequest private var groupData: FetchedResults<ReminderGroupEntity>
-   private var group: ReminderGroupEntity { groupData.first! }
+   let group: ReminderGroupEntity
    
    var body: some View {
       HStack {
@@ -36,16 +34,11 @@ struct DisclosureGroupLabel: View {
    }
    
    private var reminderCount: String {
-      String(group.list.map{ $0.remindersCount }.reduce(0, +))
+      String(group.list.map{ $0.reminders.count }.reduce(0, +))
    }
    
    private var isEditMode: Bool {
       editMode?.wrappedValue == .active
-   }
-   
-   init(_ group: ReminderGroupEntity) {
-      _groupData = FetchRequest(entity: ReminderGroupEntity.entity(), sortDescriptors: [],
-                            predicate: NSPredicate(format: "id == %@", group.id! as CVarArg))
    }
 }
 
@@ -54,7 +47,8 @@ struct DisclosureGroupLabel: View {
 
 struct DisclosureGroupLabel_Previews: PreviewProvider {
     static var previews: some View {
-      let group = CoreDataSample.createSampleGroupLists()[0]
-      DisclosureGroupLabel(group)
+      let context = CoreDataManager.shared.context
+      let group = CoreDataSample.createReminderGroups(context: context)[0]
+      DisclosureGroupLabel(group: group)
     }
 }
