@@ -57,7 +57,7 @@ class ReminderGroupFormVM: ObservableObject {
    // MARK: -- Helpers
    
    private func updateGroupInfo() {
-      let otherLists = coreDataManager.all.filter { $0.name != group?.name }.flatMap{ $0.list }
+      let otherLists = coreDataManager.reminderGroups.filter { $0.name != group?.name }.flatMap{ $0.list }
       
       name = group?.name ?? ""
       includedListsPlaceholder = group?.list ?? []

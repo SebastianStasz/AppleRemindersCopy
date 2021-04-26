@@ -49,6 +49,9 @@ struct BottomBar: ViewModifier {
       if sheet.markAsFlagged {
          sheet.activeSheet = .addReminder(options: .markAsFlagged)
       }
+      else if sheet.markAsToday {
+         sheet.activeSheet = .addReminder(options: .markAsToday)
+      }
       else {
          let list = sheet.reminderList
          sheet.activeSheet = list != nil

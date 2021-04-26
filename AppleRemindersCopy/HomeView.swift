@@ -11,22 +11,29 @@ struct HomeView: View {
    @Environment(\.managedObjectContext) private var context
    @EnvironmentObject private var nav: NavigationController
    @EnvironmentObject private var sheet: SheetController
-   @StateObject private var searchBar: SearchBar = SearchBar()
+   @StateObject private var searchBar = SearchBar()
    @State private var isEditMode = false
-   
+
    var body: some View {
-      VStack {
-         ReminderCardGroupView(editMode: $isEditMode).padding(.top)
-         ReminderListListView()
-         Spacer()
+      ZStack {
+         VStack {
+            ReminderCardGroupView(editMode: $isEditMode).padding(.top)
+            ReminderListListView()
+            Spacer()
+         }
+         
+         if !searchBar.text.isEmpty {
+            RemindersFiltered(searchBar: searchBar)
+         }
       }
       .background(Color.systemGroupedBackground.ignoresSafeArea())
       
       // -- Navigation configuration
       .toolbar { EditButton() }
       .navigationTitleColor(nav.accentColor)
-      .add(searchBar).overlay(viewControllerResolver)
+      .add(searchBar)
       .embedInNavigation(mode: .inline).setupBottomBar(isEditMode: isEditMode)
+      .navigationViewStyle(StackNavigationViewStyle())
       
       .sheet(item: $sheet.activeSheet) {
          $0.sheetView.environment(\.managedObjectContext, context)

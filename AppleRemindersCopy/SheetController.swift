@@ -12,6 +12,7 @@ enum ReminderFormOptions {
    case edit(reminder: ReminderEntity)
    case withList(ReminderListEntity)
    case markAsFlagged
+   case markAsToday
 }
 
 class SheetController: ObservableObject {
@@ -20,10 +21,12 @@ class SheetController: ObservableObject {
    
    var reminderList: ReminderListEntity?
    var markAsFlagged: Bool = false
+   var markAsToday: Bool = false
    
    func restoreToDefaults() {
       reminderList = nil
       markAsFlagged = false
+      markAsToday = false
    }
 }
 

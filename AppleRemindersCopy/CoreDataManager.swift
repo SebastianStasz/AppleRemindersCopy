@@ -18,8 +18,8 @@ class CoreDataManager: NSObject, ObservableObject {
    let context: NSManagedObjectContext
    
    override init() {
-      persistence = PersistenceController.preview /// Preview Context
-//      persistence = PersistenceController() /// Real Context
+//      persistence = PersistenceController.preview /// Preview Context
+      persistence = PersistenceController() /// Real Context
       context = persistence.container.viewContext
       let request: NSFetchRequest<ReminderGroupEntity> = ReminderGroupEntity.fetchRequest()
       request.sortDescriptors = [ReminderGroupEntity.sortByName]
@@ -34,10 +34,14 @@ class CoreDataManager: NSObject, ObservableObject {
    
    // MARK: -- Acces
    
-   @Published private(set) var all: [ReminderGroupEntity] = []
+   @Published private(set) var reminderGroups: [ReminderGroupEntity] = []
+   
+   var reminderLists: [ReminderListEntity] {
+      reminderGroups.flatMap { $0.list }
+   }
    
    var ungroupedGroup: ReminderGroupEntity {
-      let group = all.filter { $0.id?.uuidString == UserDefaults.ungroupedGroupId }.first
+      let group = reminderGroups.filter { $0.id?.uuidString == UserDefaults.ungroupedGroupId }.first
       guard let ungroupedGroup = group else {
          return createUngroupedReminderGroup()
       }
@@ -46,6 +50,11 @@ class CoreDataManager: NSObject, ObservableObject {
    
    func delete(_ object: NSManagedObject) {
       context.delete(object)
+   }
+   
+   func getMissedRemindersCount() -> Int {
+      let missedRemindersCount = reminderLists.map { $0.reminders.filter { $0.date ?? Date() < Date() } }.count
+      return missedRemindersCount
    }
    
    // MARK: -- Logic
@@ -70,7 +79,7 @@ class CoreDataManager: NSObject, ObservableObject {
       context.perform { [weak self] in
          do {
             try self?.context.save()
-            print("Context saved successfuly!")
+//            print("Context saved successfuly!")
          } catch {
             print("Error when saving context: \(error)")
          }
@@ -84,13 +93,13 @@ extension CoreDataManager: NSFetchedResultsControllerDelegate {
    
    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
       guard let reminderGroups = controller.fetchedObjects as? [ReminderGroupEntity] else { return }
-      all = reminderGroups
+      self.reminderGroups = reminderGroups
    }
    
    func groupsPerformFetch() {
       do {
          try groupsController.performFetch()
-         all = groupsController.fetchedObjects ?? []
+         reminderGroups = groupsController.fetchedObjects ?? []
       } catch {
          print("\nCurrencyManager: failed to fetch currencies\n")
       }

@@ -10,7 +10,7 @@ import SwiftUI
 struct ReminderCardView: View {
    @FetchRequest private var reminders: FetchedResults<ReminderEntity>
    private let card: ReminderCard.CardData
-
+   
    private var remindersCount: String {
       String(reminders.count)
    }
@@ -32,13 +32,16 @@ struct ReminderCardView: View {
    private var destination: some View {
       Group {
          if card.model == .flagged {
-            ReminderListWithList(reminders: reminders.map{$0})
+            ReminderListWithList(reminders: reminders.map{$0}, showListName: true)
                .embedinRemindersView(markAsFlagged: true, title: card.model.title, accentColor: card.model.color, hideBottomBar: card.model.list.isBottomBarHidden)
+            
+         } else if card.model == .today {
+            ReminderListWithList(reminders: reminders.map{$0}, showListName: true)
+               .embedinRemindersView(markAsToday: true, title: card.model.title, accentColor: card.model.color, hideBottomBar: card.model.list.isBottomBarHidden)
+            
          } else {
             Group {
-               if card.model == .today {
-                  ReminderListWithList(reminders: reminders.map{$0})
-               } else if card.model == .scheduled {
+               if card.model == .scheduled {
                   RemindersScheduled(reminders: reminders)
                } else {
                   RemindersAll()

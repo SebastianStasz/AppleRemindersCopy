@@ -38,13 +38,13 @@ class ReminderCard {
    }
    
    private func decodeReminderCards(from data: Data) {
-      print("Loading Reminder Cards")
+//      print("Loading Reminder Cards")
       let reminderCards = try! PropertyListDecoder().decode([ReminderCard.CardData].self, from: data)
       all = reminderCards
    }
    
    private func createReminderCards() {
-      print("Creating Reminder Cards")
+//      print("Creating Reminder Cards")
       all = ReminderCardModel.allCases.map { ReminderCard.CardData(model: $0) }
    }
    

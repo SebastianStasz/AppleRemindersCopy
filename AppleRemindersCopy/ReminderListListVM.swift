@@ -38,7 +38,7 @@ class ReminderListListVM: ObservableObject {
    // MARK: -- Helpers
    
    private func updateGroupsChanges() {
-      coreDataManager.$all
+      coreDataManager.$reminderGroups
          .sink { [weak self] in
             self?.groups = $0.filter { $0.id?.uuidString != UserDefaults.ungroupedGroupId }
          }

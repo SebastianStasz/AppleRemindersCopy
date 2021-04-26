@@ -16,18 +16,14 @@ struct ReminderFormView: View {
    private let coreDataManager = CoreDataManager.shared
    let options: ReminderFormOptions?
    
-   private var reminderLists: [ReminderListEntity] {
-      coreDataManager.all.flatMap { $0.list }
-   }
-   
    var body: some View {
       Form {
-         TextField("Title", text: $form.form.title)
+         TextField("Title", text: $form.form.name)
          
          if isEditing { ReminderFormEditingView() }
          else { ReminderFormDefaultView(saveChanges: saveChanges) }
          
-         ReminderFormListPicker(reminderLists: reminderLists)
+         ReminderFormListPicker(reminderLists: coreDataManager.reminderLists)
       }
       .toolbar { navigationBar }
       .embedInNavigation(mode: .inline, title: title)
@@ -61,6 +57,10 @@ struct ReminderFormView: View {
          form.form.isFlagged = true
          setDefaultList()
          form.reminderToEdit = nil
+      case .markAsToday:
+         form.form.isDateSelected = true
+         setDefaultList()
+         form.reminderToEdit = nil
       case .none:
          setDefaultList()
          form.reminderToEdit = nil
@@ -68,7 +68,7 @@ struct ReminderFormView: View {
    }
    
    private func setDefaultList() {
-      if let list = reminderLists.first {
+      if let list = coreDataManager.reminderLists.first {
          form.form.list = list
       }
    }
@@ -79,7 +79,7 @@ struct ReminderFormView: View {
    }
    
    private func close() {
-      form.hasChanged ? presentAlert() : dismiss()
+      form.formHasChanged ? presentAlert() : dismiss()
    }
    
    private func presentAlert() {

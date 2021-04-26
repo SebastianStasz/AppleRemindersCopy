@@ -11,9 +11,13 @@ import SwiftUI
 struct AppleRemindersCopyApp: App {
    private let context = CoreDataManager.shared.context
    @Environment(\.scenePhase) private var scenePhase
-   
    @StateObject private var sheetController = SheetController()
    @StateObject private var navigationController = NavigationController()
+   
+   init() {
+      NotificationManager.shared.checkForAuthorization()
+      setNotificationBadge()
+   }
    
    var body: some Scene {
       WindowGroup {
@@ -21,12 +25,24 @@ struct AppleRemindersCopyApp: App {
             .environment(\.managedObjectContext, context)
             .environmentObject(navigationController)
             .environmentObject(sheetController)
-            .environment(\.locale, Locale(identifier: "pl"))
       }
       .onChange(of: scenePhase) { phase in
-          if phase == .background {
-            try! context.save()
-          }
+          if phase == .background { try! context.save() }
       }
    }
 }
+
+func setNotificationBadge() {
+   let ammount = CoreDataManager.shared.getMissedRemindersCount()
+   UIApplication.shared.applicationIconBadgeNumber = ammount
+}
+
+// TODO:
+// - Refactor scheduled reminders filtering
+// - Refactor creating reminder options
+// - Refactor ReminderRow
+// - ReminderList / ReminderGroup ordering
+
+// Bugs:
+// - GroupList Row count not updating properly
+// - IconBagdeNumber not working

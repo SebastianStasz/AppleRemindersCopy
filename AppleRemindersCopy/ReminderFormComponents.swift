@@ -30,7 +30,7 @@ struct ReminderFormLocationSelection: View {
    
    var body: some View {
       Section {
-         Toggle(isOn: $form.form.isLocationSelected) {
+         Toggle(isOn: $form.isLocationSelected) {
             ReminderFormLabel.location(nil).view
          }
       }
@@ -43,7 +43,7 @@ struct ReminderFormMessagingSelection: View {
    
    var body: some View {
       Section {
-         Toggle(isOn: $form.form.isMessagingSelected) {
+         Toggle(isOn: $form.isMessagingSelected) {
             ReminderFormLabel.messeging(nil).view
          }
          Text(messagingInfo)

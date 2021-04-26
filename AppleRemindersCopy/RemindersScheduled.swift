@@ -20,21 +20,12 @@ struct RemindersScheduled: View {
    private var list: some View {
       List {
          ForEach(filteredByDay, id: \.0) { list in
-            Section(header: ListHeader(title: list.0, color: .white)) {
-               ForEach(list.1) { reminder in
-                  ReminderRow(reminder: reminder, selectedReminder: $selectedReminder)
-               }
-               .onDelete { delete(at: $0, from: list.1) }
+            Section(header: ListHeader(title: list.0, color: .primary)) {
+               FinalReminderList(reminders: list.1, showListName: true, showTimeOnly: true)
             }
             .textCase(nil)
          }
-      }.animation(.easeInOut)
-   }
-   
-   private func delete(at indexSet: IndexSet, from list: [ReminderEntity]) {
-      let index = indexSet.map { $0 }.first!
-      let reminder = reminders.first { $0 == list[index] }!
-      coreDataManager.delete(reminder)
+      }
    }
    
    private var filteredByDay: [(String, [ReminderEntity])] {
@@ -54,7 +45,6 @@ struct RemindersScheduled: View {
          } else {
             if reminderDays == days {
                subArray.append(reminder)
-               if index == all { result.append((date, subArray)) }
             } else {
                result.append((date, subArray))
                subArray = []
@@ -63,8 +53,8 @@ struct RemindersScheduled: View {
                subArray.append(reminder)
             }
          }
+         if index == all { result.append((date, subArray)) }
       }
-
       return result
    }
 }

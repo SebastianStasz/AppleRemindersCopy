@@ -19,12 +19,7 @@ enum ReminderCardList: Int, Codable {
    var predicate: NSPredicate? {
       switch self {
       case .today:
-         let dateRange = DateManager.getTodayDateRange()
-         let fromPredicate = NSPredicate(format: "date >= %@", dateRange.dateFrom as NSDate)
-         let toPredicate = NSPredicate(format: "date < %@", dateRange.dateTo as NSDate)
-         let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fromPredicate, toPredicate])
-         return predicate
-         
+         return ReminderEntity.predicateToday
       case .flagged:
          return ReminderEntity.predicateFlagged
       case .scheduled:
@@ -36,6 +31,7 @@ enum ReminderCardList: Int, Codable {
    
    var sortDescriptor: NSSortDescriptor {
       switch self {
+      case .today: return ReminderEntity.sortByScheduledDate
       case .scheduled: return ReminderEntity.sortByScheduledDate
       default: return ReminderEntity.sortByCreatedDate
       }

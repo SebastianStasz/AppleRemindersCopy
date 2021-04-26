@@ -33,7 +33,7 @@ struct ReminderFormRepeatSelection: View {
                }
             }
          }
-      }
+      }.disabled(!form.form.isDateSelected)
    }
    
    private var endRepetitionDetailView: some View {

@@ -12,6 +12,7 @@ struct RemindersView: ViewModifier {
    @EnvironmentObject private var nav: NavigationController
    let listForReminder: ReminderListEntity?
    let markAsFlagged: Bool
+   let markAsToday: Bool
    let hideBottomBar: Bool
    let accentColor: Color
    let title: String
@@ -34,15 +35,17 @@ struct RemindersView: ViewModifier {
    private func viewDidAppear() {
       sheet.reminderList = listForReminder
       sheet.markAsFlagged = markAsFlagged
+      sheet.markAsToday = markAsToday
       nav.setupBottomBar(hideBottomBar: hideBottomBar, color: accentColor, showAddListBtn: false)
    }
 }
 
 extension View {
-   func embedinRemindersView(list: ReminderListEntity? = nil, markAsFlagged: Bool = false, title: String, accentColor: Color, hideBottomBar: Bool) -> some View
+   func embedinRemindersView(list: ReminderListEntity? = nil, markAsFlagged: Bool = false, markAsToday: Bool = false, title: String, accentColor: Color, hideBottomBar: Bool) -> some View
    {
       self.modifier(RemindersView(listForReminder: list,
                                   markAsFlagged: markAsFlagged,
+                                  markAsToday: markAsToday,
                                   hideBottomBar: hideBottomBar,
                                   accentColor: accentColor,
                                   title: title))

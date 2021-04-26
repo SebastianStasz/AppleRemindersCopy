@@ -33,6 +33,8 @@ struct ReminderFormDetailView: View {
             ReminderDetailFormComponents()
             
             TextField("URL", text: $form.form.url)
+               .keyboardType(.URL)
+               .autocapitalization(.none)
          }
       }
       .navigationBarTitleDisplayMode(.inline)

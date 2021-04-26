@@ -27,7 +27,7 @@ struct RemindersAll: View {
       List {
          ForEach(reminderLists) { list in
             Section(header: ListHeader(list: list)) {
-               ReminderList(reminders: list.reminders)
+               FinalReminderList(reminders: list.reminders)
                Button { showReminderCreatingSheet(list: list) } label: {
                   addReminderButtonLabel
                }

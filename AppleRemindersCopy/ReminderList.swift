@@ -9,13 +9,22 @@ import SwiftUI
 
 // MARK: -- Main ReminderList
 
-struct ReminderList: View {
+struct FinalReminderList: View {
+   private let notificationManager = NotificationManager.shared
    @State private var selectedReminder: ReminderEntity?
    let reminders: [ReminderEntity]
+   let showListName: Bool
+   let showTimeOnly: Bool
+   
+   init(reminders: [ReminderEntity], showListName: Bool = false, showTimeOnly: Bool = false) {
+      self.reminders = reminders
+      self.showListName = showListName
+      self.showTimeOnly = showTimeOnly
+   }
    
    var body: some View {
       ForEach(reminders) { reminder in
-         ReminderRow(reminder: reminder, selectedReminder: $selectedReminder)
+         ReminderRow(reminder: reminder, selectedReminder: $selectedReminder, dateOptions: dateOptions, showListName: showListName)
       }
       .onDelete(perform: delete)
    }
@@ -23,7 +32,13 @@ struct ReminderList: View {
    private func delete(at indexSet: IndexSet) {
       let index = indexSet.map { $0 }.first!
       let reminder = reminders[index]
+      print("Deleting reminder")
+      NotificationManager.shared.deleteNotification(withId: reminder.id_)
       CoreDataManager.shared.delete(reminder)
+   }
+   
+   private var dateOptions: DateDescriptionView.Options {
+      return showTimeOnly ? .time : .dateAndTime
    }
 }
 
@@ -31,12 +46,18 @@ struct ReminderList: View {
 
 struct ReminderListWithList: View {
    let reminders: [ReminderEntity]
+   let showListName: Bool
+   
+   init(reminders: [ReminderEntity], showListName: Bool = false) {
+      self.reminders = reminders
+      self.showListName = showListName
+   }
    
    var body: some View {
       if reminders.isEmpty { NoRemindersMessage() }
       else {
          List {
-            ReminderList(reminders: reminders)
+            FinalReminderList(reminders: reminders, showListName: showListName)
          }
       }
    }

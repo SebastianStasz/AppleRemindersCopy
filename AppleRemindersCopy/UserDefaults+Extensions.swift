@@ -8,9 +8,6 @@
 import Foundation
 
 extension UserDefaults {
-   
-//   static let ungroupedGroupId = UserDefaults.standard.string(forKey: UserDefaults.Keys.ungroupedGroupId.rawValue)
-   
    static var ungroupedGroupId: String {
       let id = UserDefaults.standard.string(forKey: UserDefaults.Keys.ungroupedGroupId.rawValue)
       
@@ -21,9 +18,12 @@ extension UserDefaults {
       return validId
    }
    
+
+   
    enum Keys: String, CaseIterable {
       case reminderCards
       case ungroupedGroupId
+      case defaultTriggerTime
    }
    
    func hardReset() {

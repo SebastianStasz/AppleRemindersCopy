@@ -26,15 +26,14 @@ struct ReminderFormDefaultView: View {
    private var detailsLinkLabel: some View {
       VStack(alignment: .leading) {
          Text("Details")
-         Group {
-            if let date = form.dateDescription {
-               form.timeDescription == nil
-                  ? Text(date)
-                  : Text("\(date) at \(form.timeDescription!)")
-            }
+         if form.form.isDateSelected {
+            DateDescriptionView(date: form.form.date, options: dateOptions)
+               .font(.footnote).opacity(0.7)
          }
-         .font(.caption2)
-         .opacity(0.5)
       }
+   }
+   
+   private var dateOptions: DateDescriptionView.Options {
+      return form.form.isTimeSelected ? .dateAndTime : .date
    }
 }

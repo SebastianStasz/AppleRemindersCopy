@@ -5,6 +5,7 @@
 //  Created by Sebastian Staszczyk on 06/04/2021.
 //
 
+import CoreData
 import Foundation
 import SwiftUI
 
@@ -50,6 +51,18 @@ extension ReminderEntity {
    
    static let predicateFlagged = NSPredicate(format: "isFlagged == YES")
    static let predicateScheduled = NSPredicate(format: "date != NULL")
+   static var predicateToday: NSPredicate {
+      let dateRange = DateManager.getDateRange(for: Date())
+      let predicate = NSPredicate(format: "date < %@", dateRange.dateEnd as NSDate)
+      return predicate
+   }
+   
+   // MARK: -- Access
+   
+   var id_: UUID {
+      get { id! }
+      set { id = newValue }
+   }
    
    var name: String {
       get { name_ ?? ""}
@@ -59,3 +72,5 @@ extension ReminderEntity {
    var createdDate: Date { createdDate_! }
    var listColor: Color { list.color_.color }
 }
+
+
